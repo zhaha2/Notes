@@ -8,35 +8,29 @@
   - [3.1 语义化好处](#31-语义化好处)
   - [3.2 注意语义化编写](#32-注意语义化编写)
   - [3.3 常见的语义化标签](#33-常见的语义化标签)
-- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype档类型-的作)
+- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype文档类型-的作用)
   - [4.1 为什么HTML5只需要写`<!DOCTYPE HTML>`](#41-为什么html5只需要写doctype-html)
 - [5. script标签中defer和async的区别](#5-script标签中defer和async的区别)
 - [6. head标签](#6-head标签)
 - [6. meta标签](#6-meta标签)
 - [7. HTML5有哪些更新](#7-html5有哪些更新)
   - [7.1 语义化标签](#71-语义化标签)
-    - [7.1.1 title与h1的区别、b与strong的区别、i与em的区别](#711-title与h1的区别b与strong的区别i与em的区别)
   - [7.2 媒体标签](#72-媒体标签)
   - [7.3 表单](#73-表单)
-    - [7.3.1 H5中新增的语义标签](#731-h5中新增的语义标签)
-    - [7.3.2 表单属性](#732-表单属性)
-    - [7.3.3 表单事件](#733-表单事件)
-  - [7.4 进度条、度量器](#74-进度条度量器)
+  - [7.4 进度条、度量器](#74-进度条-度量器)
   - [7.5 Web存储](#75-web存储)
   - [7.6 DOM操作](#76-dom操作)
-    - [7.6.1 获取元素](#761-获取元素)
-    - [7.6.2 类名操作](#762-类名操作)
-    - [7.6.3 自定义属性](#763-自定义属性)
   - [7.7 Drag API](#77-drag-api)
   - [7.8 web worker](#78-web-worker)
   - [7.9 drag API](#79-drag-api)
   - [7.10 其他](#710-其他)
   - [7.11 总结](#711-总结)
 - [8. HTML5的离线储存](#8-html5的离线储存)
-  - [8.1 浏览器是如何对 HTML5 的离线储存资源进行管理和加载的](#81-浏览器是如何对-html5-的离线储存资源进行管理和加载的)
 - [9. img的srcset属性](#9-img的srcset属性)
 - [10. label](#10-label)
 - [11. 浏览器乱码的原因是什么？如何解决](#11-浏览器乱码的原因是什么如何解决)
+- [12. `<img>` 的 title 和 alt 属性的区别](#12-img-的-title-和-alt-属性的区别)
+- [13. 懒加载](#13-懒加载)
 
 <!-- /code_chunk_output -->
 ### 1. iframe框架及优缺点
@@ -186,6 +180,7 @@ meta 元素定义的元数据的类型包括以下几种：
   copyright
   viewport(适配移动端，可以控制视口的大小和比例)
 
+？？viewport是做什么的
 ### 7. HTML5有哪些更新
 #### 7.1 语义化标签
 header：定义文档的页眉（头部）；
@@ -376,6 +371,63 @@ sessionStorage.clear();
 ```
 >详见 浏览器原理 &
 https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/LocalStorage%E4%B8%8ESessionStorage.md
+
+##### 7.5.1 如何设置localStorage的存储时间
+重写 set(存入) 方法：
+存入的值由原本的value改为对象，增加属性：time，对应过期时间。因为localStrorage值不能为对象，所以用json（JSON.stringify）转化。
+重写 get(获取) 方法：
+JSON.parse取出，判断
+>http://www.fly63.com/article/detial/1348
+>https://blog.csdn.net/weixin_43254766/article/details/83618630
+
+##### 7.5.2 浏览器本地存储方式及使用场景
+###### 7.5.2.1 Cookie
+Cookie是最早被提出来的本地存储方式，在此之前，服务端是无法判断网络中的两个请求是否是同一用户发起的，为解决这个问题，Cookie就出现了。Cookie的大小只有4kb，它是一种纯文本文件，每次发起HTTP请求都会携带Cookie。
+
+**Cookie的特性：**
+- Cookie一旦创建成功，名称就无法修改
+- Cookie是无法跨域名的，也就是说a域名和b域名下的- cookie是无法共享的，这也是由Cookie的隐私安全性决定的，这样就能够阻止非法获取其他网站的Cookie
+- 每个域名下Cookie的数量不能超过20个，每个Cookie的大小不能超过4kb
+- 有安全问题，如果Cookie被拦截了，那就可获得session的所有信息，即使加密也于事无补，无需知道cookie的意义，只要转发cookie就能达到目的
+- Cookie在请求一个新的页面的时候都会被发送过去
+
+如果需要域名之间跨域共享Cookie，有两种方法：
+1. 使用Nginx反向代理
+2. 在一个站点登陆之后，往其他网站写Cookie。服务端的Session存储到一个节点，Cookie存储sessionId
+
+**Cookie的使用场景**：
+- 最常见的使用场景就是Cookie和session结合使用，我们将sessionId存储到Cookie中，每次发请求都会携带这个sessionId，这样服务端就知道是谁发起的请求，从而响应相应的信息。
+- 可以用来统计页面的点击次数
+
+###### 7.5.2.2 LocalStorage
+LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息较大，Cookie就不能满足我们的需求，这时候LocalStorage就派上用场了。
+
+**LocalStorage的优点**：
+- 在大小方面，LocalStorage的大小一般为5MB，可以储存更多的信息
+- LocalStorage是持久储存，并不会随着页面的关闭而消失，除非主动清理，不然会永久存在
+- 仅储存在本地，不像Cookie那样每次HTTP请求都会被携带
+
+**LocalStorage的缺点**：
+- 存在浏览器兼容问题，IE8以下版本的浏览器不支持
+- 如果浏览器设置为隐私模式，那我们将无法读取到LocalStorage
+- LocalStorage受到同源策略的限制，即端口、协议、主机地址有任何一个不相同，都不会访问
+
+**LocalStorage的使用场景**：
+- 有些网站有换肤的功能，这时候就可以将换肤的信息存储在本地的LocalStorage中，当需要换肤的时候，直接操作LocalStorage即可
+- 在网站中的用户浏览信息也会存储在LocalStorage中，还有网站的一些不常变动的个人信息等也可以存储在本地的LocalStorage中
+
+###### 7.5.2.3 SessionStorage
+SessionStorage和LocalStorage都是在HTML5才提出来的存储方案，SessionStorage 主要用于临时保存同一窗口(或标签页)的数据，刷新页面时不会删除，关闭窗口或标签页之后将会删除这些数据。
+
+**SessionStorage与LocalStorage对比**：
+- SessionStorage和LocalStorage都在本地进行数据存储；
+- SessionStorage也有同源策略的限制，但是SessionStorage有一条更加严格的限制，SessionStorage只有在同一浏览器的同一窗口下才能够共享；
+- LocalStorage和SessionStorage都不能被爬虫爬取；
+
+
+**SessionStorage的使用场景**
+- 由于SessionStorage具有时效性，所以可以用来存储一些网站的游客登录的信息，还有临时的浏览记录的信息。当关闭网站之后，这些信息也就随之消除了。
+
 #### 7.6 DOM操作
 ##### 7.6.1 获取元素
 - document.querySelector("selector") 通过CSS选择器获取符合条件的第一个元素。
@@ -457,6 +509,51 @@ workers和主线程间的数据传递通过这样的消息机制进行——双�
 创建 web worker： 
 ` var worker = new Worker('worker.js'); `
 
+**作用**
+个人觉得，Web Worker我们可以当做计算器来用，需要用的时候掏出来摁一摁，不用的时候一定要收起来~
+
+- 加密数据
+有些加解密的算法比较复杂，或者在加解密很多数据的时候，这会非常耗费计算资源，导致UI线程无响应，因此这是使用Web Worker的好时机，使用Worker线程可以让用户更加无缝的操作UI。
+- 预取数据
+有时候为了提升数据加载速度，可以提前使用Worker线程获取数据，因为Worker线程是可以是用 XMLHttpRequest 的。
+- 预渲染
+在某些渲染场景下，比如渲染复杂的canvas的时候需要计算的效果比如反射、折射、光影、材料等，这些计算的逻辑可以使用Worker线程来执行，也可以使用多个Worker线程，这里有个射线追踪的示例。
+- 复杂数据处理场景
+某些检索、排序、过滤、分析会非常耗费时间，这时可以使用Web Worker来进行，不占用主线程。
+- 预加载图片
+有时候一个页面有很多图片，或者有几个很大的图片的时候，如果业务限制不考虑懒加载，也可以使用Web Worker来加载图片，可以参考一下这篇文章的探索，这里简单提要一下。
+
+```js
+// 主线程
+let w = new Worker("js/workers.js");
+w.onmessage = function (event) {
+  var img = document.createElement("img");
+  img.src = window.URL.createObjectURL(event.data);
+  document.querySelector('#result').appendChild(img)
+}
+
+// worker线程
+let arr = [...好多图片路径];
+for (let i = 0, len = arr.length; i < len; i++) {
+    let req = new XMLHttpRequest();
+    req.open('GET', arr[i], true);
+    req.responseType = "blob";
+    req.setRequestHeader("client_type", "DESKTOP_WEB");
+    req.onreadystatechange = () => {
+      if (req.readyState == 4) {
+      postMessage(req.response);
+    }
+  }
+  req.send(null);
+}
+```
+
+**注意**
+web worker**子线程完全受主线程控制，且不得操作DOM**。所以这个新标准没有改变JS单线程的本质。
+
+>https://zhuanlan.zhihu.com/p/79484282
+http://www.ruanyifeng.com/blog/2018/07/web-worker.html
+
 #### 7.9 drag API 
 拖放是一种常见的特性，即捉取对象以后拖到另一个位置，在HTML5中，拖放是标准的一部分，任何元素都能够拖放。
 
@@ -526,6 +623,7 @@ Canvas是画布，通过Javascript来绘制2D图形，是逐像素进行渲染�
 对可用性产生负面影响的元素：frame，frameset，noframes；
 
 ### 8. HTML5的离线储存
+**（已经被web标准废除）**
 离线存储指的是：在用户没有与因特网连接时，可以正常访问站点或应用，在用户与因特网连接时，更新用户机器上的缓存文件。
 
 **原理**：HTML5的离线存储是基于一个新建的 .appcache 文件的缓存机制(不是存储技术)，通过这个文件上的解析清单离线存储资源，这些资源就会像cookie一样被存储了下来。之后当网络在处于离线状态下时，浏览器会通过被离线存储的数据进行页面展示
@@ -569,6 +667,20 @@ Canvas是画布，通过Javascript来绘制2D图形，是逐像素进行渲染�
  #### 8.1 浏览器是如何对 HTML5 的离线储存资源进行管理和加载的
  - **在线的情况下**，浏览器发现 html 头部有 manifest 属性，它会请求 manifest 文件，如果是第一次访问页面 ，那么浏览器就会根据 manifest 文件的内容下载相应的资源并且进行离线存储。如果已经访问过页面并且资源已经进行离线存储了，那么浏览器就会使用离线的资源加载页面，然后浏览器会对比新的 manifest 文件与旧的 manifest 文件，如果文件没有发生改变，就不做任何操作，如果文件改变了，就会重新下载文件中的资源并进行离线存储。
 - **离线的情况下**，浏览器会直接使用离线存储的资源。
+
+---
+Manifest被移除是技术发展的必然，请拥抱Service Worker吧
+
+5、PWA(Service Worker)
+这位目前是最炙手可热的缓存明星，是官方建议替代Application Cache（Manifest）的方案
+作为一个独立的线程，是一段在后台运行的脚本，可使web app也具有类似原生App的离线使用、消息推送、后台自动更新等能力
+
+目前有三个限制（不能明说是缺点）
+
+不能访问 DOM
+不能使用同步 API
+需要HTTPS协议
+>https://github.com/amandakelake/blog/issues/43
 
 ### 9. img的srcset属性
 响应式页面中经常用到根据屏幕密度设置不同的图片。这时就用到了 img 标签的srcset属性。srcset属性用于设置不同屏幕密度下，img 会自动加载不同的图片。用法如下：
@@ -651,3 +763,16 @@ html网页编码是gbk，而程序从数据库中调出呈现是utf-8编码的�
 如果网页设置编码是gbk，而数据库储存数据编码格式是UTF-8，此时需要程序查询数据库数据显示数据前进程序转码；
 如果浏览器浏览时候出现网页乱码，在浏览器中找到转换编码的菜单进行转换。
 
+### 12. `<img>` 的 title 和 alt 属性的区别
+- **alt**属性，是`<img>`的特有属性，是图片内容的等价描述，用于图片无法加载时显示或读屏器阅读图片（帮助盲人了解图片内容）。可提图片高可访问性，除了纯装饰图片外都必须设置有意义的值，搜索引擎会重点分析。
+作用是当无法显示文档中的图片是，可以为浏览者提供文字说明，是用来替代图片的，而不是提供额外说明文字的
+如果圖片可以正常顯示，則 img alt 就不會有任何的功能。
+
+- **title**属性是global attribute之一，作用是提供建议性的信息，通常是鼠标滑动到元素上是显示。
+title属性可以用在除了base，basefont，head，html，meta，param，script和title之外的所有标签。
+title属性可以为链接添加描述性文字，来更加清楚的表达链接的目的。
+
+### 13. 懒加载
+>https://zhuanlan.zhihu.com/p/25455672 图片懒加载的三种方式
+https://segmentfault.com/a/1190000017795499
+https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/img#attr-loading 用loading: lazy属性

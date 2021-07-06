@@ -17,8 +17,40 @@
 * 注意：JS获取Layout属性值（如：offsetLeft、scrollTop、getComputedStyle等）也会引起回流。因为浏览器需要通过回流计算最新值
 * 回流必将引起重绘，而重绘不一定会引起回流。
   
+当渲染对象被创建并添加到树中，它们并没有位置和大小，所以当浏览器生成渲染树以后，就会根据渲染树来进行布局（也可以叫做回流）。这一阶段浏览器要做的事情是要弄清楚各个节点在页面中的确切位置和大小。通常这一行为也被称为“自动重排”。
+
+---
+**回流（reflow）**
+
+1. 通过构造渲染树，将可见DOM节点以及它对应的样式结合起来，可是还需要**计算它们在设备视口(viewport)内的确切位置和大小**，**这个计算的阶段就是回流**，为了弄清每个对象在网站上的确切大小和位置，浏览器从渲染树的根节点开始遍历
+2. 当然当浏览器发现布局发生了变化，这个时候就需要倒回去重新渲染，这个回退的过程叫reflow
+3. 其实页面一开始渲染的时候之所以叫回流，我的理解是，页面渲染之前那个空白页其实也是有内容的，从"空白"到有元素显示这就是回流与重绘
+
+**重绘（repaint）**
+
+1. 通过构造渲染树和回流阶段，我们知道了哪些节点是可见的，以及可见节点的样式和具体的几何信息(位置、大小)，那么我们就可以**将渲染树的每个节点都转换为屏幕上的实际像素**，这个阶段就叫做重绘
+
+**何时发生回流（reflow）与重绘（repaint）**
+
+1. 页面第一次渲染（初始化）
+2. DOM树变化（如：增删节点）
+3. Render树变化（如：padding改变）
+4. 浏览器窗口resize
+5. 获取元素的某些属性和方法（例如）
+- offsetTop、offsetLeft、offsetWidth、offsetHeight
+- scrollTop、scrollLeft、scrollWidth、scrollHeight
+- clientTop、clientLeft、clientWidth、clientHeight
+- getComputedStyle()
+- getBoundingClientRect()返回元素的大小及其相对于视口的位置
+- 背景色、颜色、字体改变（注意：字体大小发生变化时，会触发回流）
+- 具体可以访问这个网站：https://gist.github.com/paulirish/5d52fb081b3570c81e3a （有可能打不开，可以多次刷新试试）
+
+
+6. 回流必定引起重绘，重绘可以单独触发
+
 >见
 https://juejin.cn/post/6844904119157669902
+https://juejin.cn/post/6844904063641862151
 
 #### 1.1 如何最小化重绘(repaint)和回流(reflow)：
 
@@ -76,6 +108,7 @@ https://blog.csdn.net/qq_38128179/article/details/101023305
 
 此外，如果将样式放在`<body>`，当已声明的样式被解析时，浏览器必须重新呈现页面(加载时新的和旧的)。
 >https://blog.csdn.net/weixin_43438052/article/details/109703897
+
 
 #### 4. 浏览器渲染机制
 https://blog.csdn.net/wozaixiaoximen/article/details/50640954##1

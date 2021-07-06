@@ -20,6 +20,11 @@ CSS3中的盒模型有以下两种：标准盒子模型、IE盒子模型
 （4）dom.getBoundingClientRect().width/height 也是得到渲染后的宽和高，大多浏览器支持。IE9 以上支持，除此外还可以取到相对于视窗的上下左右的距离。
 >（6）dom.offsetWidth/offsetHeight 包括高度（宽度）、内边距和边框，不包括外边距。最常用，兼容性最好。
 
+#### 1.1 margin冲突问题
+子元素盒模型宽度和超过父元素宽度时
+属性间冲突时，优先级：width>margin-left>margin-right。
+>https://www.cnblogs.com/youhong/p/9392359.html
+
 ###2. li 与 li 之间有看不见的空白间隔是什么原因引起的？如何解决？
 浏览器会把inline内联元素间的空白字符（空格、换行、Tab等）渲染成一个空格。为了美观，通常是一个`<li>`放在一行，这导致`<li>`换行后产生换行字符，它变成一个空格，占用了一个字符的宽度。
 
