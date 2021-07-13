@@ -17,8 +17,3 @@ console.log('------');
 var retC = test(good).test(bad);
 retC.test(good);
 retC.test(bad);
-
-console.log(a);
-function a() {
-  console.log('func');
-}
