@@ -1,4 +1,5 @@
 面试回答 https://zhuanlan.zhihu.com/p/139634543
+https://github.com/pengpeng1020/front-end-interview/tree/master/%E5%89%8D%E7%AB%AF%E9%9D%A2%E8%AF%95
 
 ### 1. 创建对象的方法
 #### 1. new操作符的实现原理
@@ -581,7 +582,12 @@ node端发起http请求
 对请求和返回进行转化
 取消请求
 自动转换json数据
-客户端支持抵御XSRF攻击
+客户端支持抵御XSRF攻击(其实Axios，就是利用双重Cookie来防御CSRF攻击的。 Axios 提供了 xsrfCookieName 和 xsrfHeaderName 两个属性来分别设置 CSRF 的 Cookie 名称和 HTTP 请求头的名称)
+
+---
+双重cookie就是将 token 设置在 cookie 中。在提交(put,post)等请求的时候，提交cookie。并通过请求头或请求体中携带上的 Cookie 中已设置的 token，服务器接收到请求后，再进行对比校验。
+
+>axios的好处 [Axios or fetch()：你更中意哪一个？](https://juejin.cn/post/6844904078284177422)
 
 ### 变量提升
 >看 [变量对象（真正理解何为提升）](https://github.com/amandakelake/blog/issues/7)  --amandakelake
@@ -1176,6 +1182,7 @@ document.querySelector("#id-checkbox").addEventListener("click", function(event)
 ### 垃圾回收
 >看 [V8 引擎垃圾内存回收原理解析](https://juejin.cn/post/6844903993420840967)
 > [V8内存管理及垃圾回收机制](https://mp.weixin.qq.com/s/_ZXIRaV1InOyMt3Xe5irDw)
+> 看 [前端面试：谈谈 JS 垃圾回收机制](https://segmentfault.com/a/1190000018605776)
 
 #### 减少垃圾回收
 虽然浏览器可以进行垃圾自动回收，但是当代码比较复杂时，垃圾回收所带来的代价比较大，所以应该尽量减少垃圾回收。
@@ -1196,6 +1203,8 @@ JavaScript引擎需要用栈来维护程序执行期间的上下文的状态，*
 
 闭包中的变量们整体被放进一个对象存在堆中
 > 见 [JS 变量存储？栈 & 堆？NONONO!](https://juejin.cn/post/6844903997615128583#heading-21)
+> [数据结构：堆（Heap）](https://www.jianshu.com/p/6b526aa481b1)
+> https://www.ruanyifeng.com/blog/2013/11/stack.html
 
 ### 尾调用
 什么是尾调用，使用尾调用有什么好处？

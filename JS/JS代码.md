@@ -5,11 +5,15 @@ https://juejin.cn/post/6844903911686406158#heading-13
 https://juejin.cn/post/6875152247714480136#heading-35
 https://www.yuque.com/cuggz/interview/pkg93q#8BKRR
 
+稍后 [手写代码（二）](https://jinjingxuan.github.io/2020/03/20/%E9%9D%A2%E8%AF%95-%E6%89%8B%E5%86%99%E4%BB%A3%E7%A0%81%EF%BC%88%E4%BA%8C%EF%BC%89/)
+
 
 ### 实现搜索框
 
 ### 实现有并行限制的Promise调度器
 https://juejin.cn/post/6854573217013563405
+稍后 https://juejin.cn/post/6916317088521027598#heading-2
+
 ```js
 class Scheduler {
   constructor() {
@@ -59,6 +63,70 @@ scheduler.taskStart()
 // 1
 // 4
 ```
+
+#### 并行请求，顺序输出
+```js
+var promises = function () {
+  return [1000, 4000, 2000].map(current => {
+    return new Promise(function (resolve, reject) {
+      console.log(current+'Start')
+      setTimeout(() => {
+        console.log(current)
+        resolve(current)
+      }, current)
+    })
+  })
+}
+
+Promise.all(promises()).then((res) => {
+  console.log('end')
+  console.log(res);
+})
+```
+
+Primise.all结果数组是按放进去的顺序而不是回调的顺序。
+
+---
+并行请求+串行输出
+```js
+const p1 = new Promise((resolve, reject) => {
+  console.log('p1 Start');
+  setTimeout(() => {
+    console.log(1000);
+    resolve(1000)
+  }, 1000);
+})
+const p2 = new Promise((resolve, reject) => {
+  console.log('p2 Start');
+  setTimeout(() => {
+    console.log(4000);
+    resolve(4000)
+  }, 4000);
+})
+const p3 = new Promise((resolve, reject) => {
+  console.log('p3 Start');
+  setTimeout(() => {
+    console.log(2000);
+    resolve(2000)
+  }, 2000);
+})
+
+p1.then(res => {
+  console.log('res'+res);
+  // 重点
+  return p2
+}).then(res => {
+  console.log('res'+res);
+  return p3
+}).then(res => {
+  console.log('res'+res);
+  console.log('end');
+})
+```
+then方法返回的是一个新的Promise实例（注意，不是原来那个Promise实例）。因此可以采用链式写法，即then方法后面再调用另一个then方法。
+
+采用链式的then，可以指定一组按照次序调用的回调函数。这时，前一个回调函数，有可能返回的还是一个Promise对象（即有异步操作），这时后一个回调函数，就会等待该Promise对象的状态发生变化，才会被调用。
+
 ### JS基础
 
 #### 手写Promise
@@ -432,6 +500,139 @@ function deepClone(obj) {
     
     return copy
 } 
+```
+
+---
+针对循环引用的实现
+
+```js
+// 循环引用
+var circle = {}
+circle.circle = circle
+//或者
+var a = {}, b = {}
+a.b = b
+b.a = a
+```
+
+```js
+/**
+ * js深拷贝(包括 循环引用 的情况)
+ * 
+ * @param {*} originObj
+ * @param {*} [map=new WeakMap()]  使用hash表记录所有的对象的引用关系，初始化为空
+ * @returns
+ */
+function deepClone( originObj, map = new WeakMap() ) {
+    if(!originObj || typeof originObj !== 'object') return originObj;  //空或者非对象则返回本身
+ 
+    //如果这个对象已经被记录则直接返回
+    if( map.get(originObj) ) {
+        return  map.get(originObj);
+    }
+    //这个对象还没有被记录，将其引用记录在map中，进行拷贝    
+    let result = Array.isArray(originObj) ? [] : {};  //拷贝结果
+    map.set(originObj, result); //记录引用关系
+    let keys = Object.keys(originObj); //originObj的全部key集合
+    //拷贝
+    for(let i =0,len=keys.length; i<len; i++) {
+        let key = keys[i];
+        let temp = originObj[key];
+        result[key] = deepClone(temp, map);
+    }
+    return result;
+  }
+```
+————————————————
+版权声明：本文为CSDN博主「Tautus」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/Snoopyqiuer/article/details/101106303
+
+>[解决循环引用和相同引用的js深拷贝实现(BFS)](https://segmentfault.com/a/1190000021682472)
+
+#### 静态属性
+写一个函数 Foo 要求:
+```js
+var a = new Foo() // => {id: 1}
+var b = new Foo() // => {id: 2}
+```
+
+1. 静态属性
+```js
+class Foo {
+  static id = 1
+
+  constructor() {
+    this.id = Foo.id++
+  }
+}
+
+a = new Foo()
+b = new Foo()
+```
+
+2. 闭包
+```js
+var Foo = (function (){
+  var id = 0
+  return function() {
+    id++
+    return {id}
+  }
+})()
+
+// 这里就不能用new了
+a = Foo()
+b = Foo()
+```
+
+#### 隐式转换
+```js
+//实现一个 Cash 类，期望执行下面代码：
+
+const cash1 = new Cash(105);
+
+const cash2 = new Cash(66);
+
+const cash3 = cash1.add(cash2);
+
+const cash4 = Cash.add(cash1, cash2);
+
+const cash5 = new Cash(cash1 + cash2);
+
+
+console.log(`${cash3}`, `${cash4}`, `${cash5}`);
+
+// 希望输出结果为：
+
+// 1元7角1分，1元7角1分 ，1元7角1分
+```
+这题主要考察隐式转换，需要自己实现 toString 和 valueOf
+
+注意：**模板字符串调用的是对象的toString方法**
+
+```js
+class Cash {
+    constructor(num) {
+        this.num = num
+    }
+    add(c1) {
+        return new Cash(this + c1)
+    }
+    static add(c1, c2) {
+        return new Cash(c1 + c2)
+    }
+    // valueOf 用于处理 new Cash(cash1 + cash2)
+    valueOf() {
+        return this.num
+    }
+    // toString 用于处理 cash3 => `${cash3}`
+    toString() {
+        // const sum=`${this.num}`
+        // const sum = String(this.num)
+        const sum = this.num.toString()
+        return `${sum.slice(0, sum.length-2)}元${sum[sum.length-2]}角${sum[sum.length-1]}分`
+    }
+}
 ```
 
 ### 数组方法
@@ -1041,6 +1242,8 @@ sub.notify('I changed !')
 >[「中高级前端面试」手写代码合集(二)](https://juejin.cn/post/6904079136299024398/#heading-3)
 >[从一道面试题简单谈谈发布订阅和观察者模式](https://juejin.cn/post/6844904018964119566#heading-0)
 
+**补充**：once
+
 ```js
 class EventEmitter {
     constructor() {
@@ -1163,3 +1366,84 @@ function fibonacci(n) {
 }
 ```
 
+#### 将数字每千分位用逗号隔开
+```js
+let format = n => {
+    let num = n.toString() // 转成字符串
+    let decimals = ''
+        // 判断是否有小数
+    num.indexOf('.') > -1 ? decimals = num.split('.')[1] : decimals
+    let len = num.length
+    if (len <= 3) {
+        return num
+    } else {
+        let temp = ''
+        let remainder = len % 3
+        // 判断decimals是否是空字符串，相当于当作布尔值
+        decimals ? temp = '.' + decimals : temp
+        if (remainder > 0) { // 不是3的整数倍
+        // 这里slice() 方法是String.protype的方法不是数组的。 
+        // 提取某个字符串的一部分，并返回一个新的字符串，且不会改动原字符串。
+        // 先把不是三的倍数的余数部分单独提出来，不然match会自动把三的倍数外多余的部分忽略掉。
+            return num.slice(0, remainder) + ',' + num.slice(remainder, len).match(/\d{3}/g).join(',') + temp
+        } else { // 是3的整数倍
+        // 感觉不用slice也行
+            return num.slice(0, len).match(/\d{3}/g).join(',') + temp 
+        }
+    }
+}
+format(12323.33)  // '12,323.33'
+```
+
+#### 大数相加
+```js
+function sumBigNumber(a, b) {
+  let res = '';
+  let temp = 0;
+  
+  a = a.split('');
+  b = b.split('');
+  
+  while (a.length || b.length || temp) {
+    // ~~相当于取整，等于Math.floor
+    // 这里主要是转为数字
+    // 注意这里用parseInt的话条件会比较苛刻，因为
+    // 如果a.pop或b.pop其中一个为空时，parseInt就会输出NAN了，而~~输出0
+    temp += ~~a.pop() + ~~b.pop();
+    res = (temp % 10) + res;
+    temp  = temp > 9
+  }
+  return res.replace(/^0+/, '');
+}
+```
+
+>补充 ~~undefined 输出 0
+> +undefined和parseInt（undefined）输出NAN
+
+#### 排序
+https://segmentfault.com/a/1190000021638663
+
+#### 二叉树遍历
+https://www.jianshu.com/p/456af5480cee
+
+#### 最长上升子序列
+动归 https://leetcode-cn.com/problems/longest-increasing-subsequence/solution/zui-chang-shang-sheng-zi-xu-lie-by-leetcode-soluti/
+
+#### 买卖股票
+单调栈 https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/solution/c-li-yong-shao-bing-wei-hu-yi-ge-dan-diao-zhan-tu-/
+
+动归 https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/solution/gu-piao-wen-ti-python3-c-by-z1m/
+
+#### 海量数据处理
+https://blog.csdn.net/zyq522376829/article/details/47686867
+https://blog.csdn.net/v_JULY_v/article/details/6279498
+
+#### 补充
+
+### 正则
+
+#### 驼峰
+
+#### 模板字符串
+
+#### 补充

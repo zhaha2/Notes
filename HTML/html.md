@@ -8,37 +8,24 @@
   - [3.1 语义化好处](#31-语义化好处)
   - [3.2 注意语义化编写](#32-注意语义化编写)
   - [3.3 常见的语义化标签](#33-常见的语义化标签)
-- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype档类型-的作)
+- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype文档类型-的作用)
   - [4.1 为什么HTML5只需要写`<!DOCTYPE HTML>`](#41-为什么html5只需要写doctype-html)
 - [5. script标签中defer和async的区别](#5-script标签中defer和async的区别)
 - [6. head标签](#6-head标签)
 - [6. meta标签](#6-meta标签)
 - [7. HTML5有哪些更新](#7-html5有哪些更新)
   - [7.1 语义化标签](#71-语义化标签)
-    - [7.1.1 title与h1的区别、b与strong的区别、i与em的区别](#711-title与h1的区别b与strong的区别i与em的区别)
   - [7.2 媒体标签](#72-媒体标签)
   - [7.3 表单](#73-表单)
-    - [7.3.1 H5中新增的语义标签](#731-h5中新增的语义标签)
-    - [7.3.2 表单属性](#732-表单属性)
-    - [7.3.3 表单事件](#733-表单事件)
-  - [7.4 进度条、度量器](#74-进度条度量器)
+  - [7.4 进度条、度量器](#74-进度条-度量器)
   - [7.5 Web存储](#75-web存储)
-    - [7.5.1 如何设置localStorage的存储时间](#751-如何设置localstorage的存储时间)
-    - [7.5.2 浏览器本地存储方式及使用场景](#752-浏览器本地存储方式及使用场景)
-      - [7.5.2.1 Cookie](#7521-cookie)
-      - [7.5.2.2 LocalStorage](#7522-localstorage)
-      - [7.5.2.3 SessionStorage](#7523-sessionstorage)
   - [7.6 DOM操作](#76-dom操作)
-    - [7.6.1 获取元素](#761-获取元素)
-    - [7.6.2 类名操作](#762-类名操作)
-    - [7.6.3 自定义属性](#763-自定义属性)
   - [7.7 Drag API](#77-drag-api)
   - [7.8 web worker](#78-web-worker)
   - [7.9 drag API](#79-drag-api)
   - [7.10 其他](#710-其他)
   - [7.11 总结](#711-总结)
 - [8. HTML5的离线储存](#8-html5的离线储存)
-  - [8.1 浏览器是如何对 HTML5 的离线储存资源进行管理和加载的](#81-浏览器是如何对-html5-的离线储存资源进行管理和加载的)
 - [9. img的srcset属性](#9-img的srcset属性)
 - [10. label](#10-label)
 - [11. 浏览器乱码的原因是什么？如何解决](#11-浏览器乱码的原因是什么如何解决)
@@ -46,8 +33,10 @@
 - [13. 懒加载](#13-懒加载)
 - [页面加载缓慢 优化](#页面加载缓慢-优化)
   - [前端有哪些页面优化方法](#前端有哪些页面优化方法)
+  - [前端需要注意哪些SEO](#前端需要注意哪些seo)
 
 <!-- /code_chunk_output -->
+
 ### 1. iframe框架及优缺点
 https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/Iframe%E6%A1%86%E6%9E%B6%E5%8F%8A%E4%BC%98%E7%BC%BA%E7%82%B9.md
 iframe 元素会创建包含另外一个文档的内联框架（即行内框架）。
@@ -406,13 +395,36 @@ Cookie是最早被提出来的本地存储方式，在此之前，服务端是�
 - 有安全问题，如果Cookie被拦截了，那就可获得session的所有信息，即使加密也于事无补，无需知道cookie的意义，只要转发cookie就能达到目的
 - Cookie在请求一个新的页面的时候都会被发送过去
 
-如果需要域名之间跨域共享Cookie，有两种方法：
+如果需要域名之间跨域共享Cookie：
 1. 使用Nginx反向代理
 2. 在一个站点登陆之后，往其他网站写Cookie。服务端的Session存储到一个节点，Cookie存储sessionId
 
+浏览器所持有的 Cookie 分为两种：
+- Session Cookie(会话期 Cookie)：会话期 Cookie 是最简单的Cookie，它不需要指定过期时间（Expires）或者有效期（Max-Age），它仅在会话期内有效，浏览器关闭之后它会被自动删除。
+- Permanent Cookie(持久性 Cookie)：与会话期 Cookie 不同的是，持久性 Cookie 可以指定一个特定的过期时间（Expires）或有效期（Max-Age）。
+
 **Cookie的使用场景**：
-- 最常见的使用场景就是Cookie和session结合使用，我们将sessionId存储到Cookie中，每次发请求都会携带这个sessionId，这样服务端就知道是谁发起的请求，从而响应相应的信息。
+- 最常见的使用场景就是Cookie和session结合使用，我们**将sessionId存储到Cookie中**，每次发请求都会携带这个sessionId，这样服务端就知道是谁发起的请求，从而响应相应的信息。
 - 可以用来统计页面的点击次数
+
+---
+作者：但愿不头疼
+链接：https://www.nowcoder.com/discuss/648552?channel=-1&source_id=profile_follow_post_nctrack
+来源：牛客网
+
+1. 讲一下cookie？
+  我的理解是 cookie 是服务器提供的一种用于维护会话状态信息的数据，通过服务器发送到浏览器，浏览器保存在本地的一种纯文本文件，当下一次有同源的请求时，将保存的 cookie 值添加到请求头部，发送给服务端。这可以用来实现记录用户登录状态等功能。cookie 一般可以存储 4k 大小的数据，并且只能够被同源的网页所共享访问。
+
+    服务器端可以使用 Set-Cookie 的响应头部来配置 cookie 信息。一条cookie 包括了5个属性值 expires、domain、path、secure、HttpOnly。其中 expires 指定了 cookie 失效的时间，domain 是域名、path是路径，domain 和 path 一起限制了 cookie 能够被哪些 url 访问。secure 规定了 cookie 只能在确保安全的情况下传输，HttpOnly 规定了这个 cookie 只能被服务器访问，不能在客户端使用js 脚本访问。
+    客户端可以通过JS脚本,例如document.cookie="key=value"形式设置cookie
+
+    在发生 xhr 的**跨域**请求的时候，即使是同源下的 cookie，**也不会被自动添加到请求头部**，除非显示地规定。
+
+2. session是什么?
+session是服务器为了保存用户状态而创建的一个特殊的对象
+
+    在浏览器第一次访问服务器时,服务器会创建一个session对象,该对象有一个唯一的id,即sessionid,服务器会把sessionid以cookie的形式发送给浏览器,当浏览器再次访问服务器时,会携带cookie在请求头,可以通过cookie中的sessionid来访问session对象
+    可以实现在http无状态基础上实现用户状态管理(即**两个页面之间的用户状态**,我可以保存在session中)
 
 ###### 7.5.2.2 LocalStorage
 LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息较大，Cookie就不能满足我们的需求，这时候LocalStorage就派上用场了。
@@ -430,6 +442,7 @@ LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息
 **LocalStorage的使用场景**：
 - 有些网站有换肤的功能，这时候就可以将换肤的信息存储在本地的LocalStorage中，当需要换肤的时候，直接操作LocalStorage即可
 - 在网站中的用户浏览信息也会存储在LocalStorage中，还有网站的一些不常变动的个人信息等也可以存储在本地的LocalStorage中
+- 鉴权的token也可以存在localStorage中
 
 ###### 7.5.2.3 SessionStorage
 SessionStorage和LocalStorage都是在HTML5才提出来的存储方案，SessionStorage 主要用于临时保存同一窗口(或标签页)的数据，刷新页面时不会删除，关闭窗口或标签页之后将会删除这些数据。
@@ -438,6 +451,11 @@ SessionStorage和LocalStorage都是在HTML5才提出来的存储方案，Session
 - SessionStorage和LocalStorage都在本地进行数据存储；
 - SessionStorage也有同源策略的限制，但是SessionStorage有一条更加严格的限制，SessionStorage只有在同一浏览器的同一窗口下才能够共享；
 - LocalStorage和SessionStorage都不能被爬虫爬取；
+
+---
+**作用域不同**
+不同浏览器无法共享localStorage或sessionStorage中的信息。相同浏览器的**不同页面间可以共享相同的 localStorage**（页面属于相同域名和端口），但是不同页面或标签页间无法共享sessionStorage的信息。这里需要注意的是，页面及标签页仅指顶级窗口，如果一个标签页包含多个iframe标签且他们属于同源页面，那么他们之间是可以共享sessionStorage的。
+注：Cookie也可以共享。
 
 
 **SessionStorage的使用场景**
@@ -809,3 +827,22 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/img#attr-loading 用lo
 减少对DOM的操作
 在JS中避免“嵌套循环”和 “死循环”
 尽可能使用事件委托（事件代理）来处理事件绑定的操作
+
+#### 前端需要注意哪些SEO
+作者：不拿offer不放弃_
+链接：https://www.nowcoder.com/discuss/412972?channel=-1&source_id=profile_follow_post_nctrack
+来源：牛客网
+
+合理的title，description，keywords：搜索对着三项的权重逐渐减小，title值强调重点即可，重要关键词出现不要超过两次，而且要靠前。description把页面的内容高度概括，长度合适，不可过分堆砌关键词，不同页面的description有所不同。keywords列举出重要关键词即可。
+
+语义化的html代码，让搜索引擎容易理解网页。
+
+重要内容html代码放在最前面，因为搜索引擎抓取html顺序是从上至下的，有的搜索引擎对抓取长度有限制，保证重要内容一定会被抓取。
+
+重要内容不要用js输出，因为爬虫不会执行js获取内容。
+
+少用iframe，搜索引擎不会抓取iframe中的内容
+
+非装饰性图片必须加alt。
+
+提高网站速度：网站速度是搜索引擎排序的一个重要指标。

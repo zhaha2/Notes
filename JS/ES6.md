@@ -100,6 +100,102 @@ const go = function*(){
 
 如果对没有 Iterator 接口的对象，使用扩展运算符，将会报错。
 
+### Class
+
+#### 静态方法
+类相当于实例的原型，所有在类中定义的方法，都会被实例继承。如果在一个方法前，加上static关键字，就表示**该方法不会被实例继承，而是直接通过类来调用**，这就称为“静态方法”。
+
+```js
+class Foo {
+  static classMethod() {
+    return 'hello';
+  }
+}
+
+Foo.classMethod() // 'hello'
+
+var foo = new Foo();
+foo.classMethod()
+// TypeError: foo.classMethod is not a function
+```
+
+注意，如果静态方法包含this关键字，这个this指的是类，而不是实例。
+
+注意：类名后面不写括号()
+
+```js
+class Foo {
+  static bar() {
+    this.baz();
+  }
+  static baz() {
+    console.log('hello');
+  }
+  baz() {
+    console.log('world');
+  }
+}
+
+Foo.bar() // hello
+```
+静态方法可以与非静态方法重名。
+
+#### 静态属性
+
+静态属性指的是 Class 本身的属性，即Class.propName，而不是定义在实例对象（this）上的属性。
+
+```js
+// 老写法
+class Foo {
+  // ...
+}
+Foo.prop = 1;
+
+// 新写法
+class Foo {
+  static prop = 1;
+}
+
+Foo.prop  //1
+```
+
+注意使用的时候要用`Foo.prop`
+
+#### 类的 prototype 属性和__proto__属性
+大多数浏览器的 ES5 实现之中，每一个对象都有__proto__属性，指向对应的构造函数的prototype属性。Class 作为构造函数的语法糖，同时有prototype属性和__proto__属性，因此同时存在两条继承链。
+
+（1）子类的__proto__属性，表示构造函数的继承，总是指向父类。
+
+（2）子类prototype属性的__proto__属性，表示方法的继承，总是指向父类的prototype属性。
+
+这样的结果是因为，类的继承是按照下面的模式实现的。
+
+```js
+class A {
+  }
+
+class B {
+}
+
+// B 的实例继承 A 的实例
+Object.setPrototypeOf(B.prototype, A.prototype);
+
+// B 继承 A 的静态属性
+Object.setPrototypeOf(B, A);
+
+const b = new B();
+```
+
+《对象的扩展》一章给出过Object.setPrototypeOf方法的实现。
+
+```js
+Object.setPrototypeOf = function (obj, proto) {
+  obj.__proto__ = proto;
+  return obj;
+}
+```
+
+
 ### Generator
 是ES6里面的新数据类型，像一个函数，可以返回多次。特点就是函数有个*号。返回一个遍历器(Iterator)对象。
 
@@ -155,6 +251,126 @@ p.a // 'a' = 2
 一共 13 种。
 
 >见 https://es6.ruanyifeng.com/?search=EPSILON&x=4&y=8#docs/proxy
+
+### BigInt
+JS 中的Number类型只能安全地表示-9007199254740991 (-(2^53-1)) 和9007199254740991(2^53-1)之间的整数，任何超出此范围的整数值都可能失去精度。
+
+JS 提供Number.MAX_SAFE_INTEGER常量来表示 最大安全整数，Number.MIN_SAFE_INTEGER常量表示最小安全整数
+
+BigInt 是一种内置对象，它提供了一种方法来表示大于 2^53 - 1 的整数。
+BigInt 不能与普通数值进行混合运算。
+BigInt 和 Number 不是严格相等的，但是宽松相等的。
+
+对任何 BigInt 值使用 JSON.stringify() 都会引发 TypeError，因为默认情况下 BigInt 值不会在 JSON 中序列化。但是，如果需要，可以实现 toJSON 方法：`BigInt.prototype.toJSON = function() { return this.toString(); }`
+
+#### 范围
+- `BigInt.asUintN(width, BigInt)`： 给定的 BigInt 转为 0 到 2width - 1 之间对应的值。
+- `BigInt.asIntN(width, BigInt)`：给定的 BigInt 转为 -2width - 1 到 2width - 1 - 1 之间对应的值。
+- `BigInt.parseInt(string[, radix])`：近似于Number.parseInt()，将一个字符串转换成指定进制的 BigInt
+
+```js
+const max =2n**(64n-1n)-1n;
+BigInt.asIntN(64, max)
+// 9223372036854775807n
+BigInt.asIntN(64, max +1n)
+// -9223372036854775808n
+BigInt.asUintN(64, max +1n)
+// 9223372036854775808n
+```
+上面代码中，max是64位带符号的 BigInt 所能表示的最大值。如果对这个值加1n，BigInt.asIntN()将会返回一个负值，因为这时新增的一位将被解释为符号位。而BigInt.asUintN()方法由于不存在符号位，所以可以正确返回结果。
+
+下面是BigInt.parseInt()的例子。
+
+```js
+// Number.parseInt() 与 BigInt.parseInt() 的对比
+Number.parseInt('9007199254740993',10)
+// 9007199254740992
+BigInt.parseInt('9007199254740993',10)
+// 9007199254740993n
+```
+
+上面代码中，由于有效数字超出了最大限度，Number.parseInt方法返回的结果是不精确的，而BigInt.parseInt方法**正确**返回了对应的 BigInt。(BigInt.parseInt还是返回BigInt)
+
+### Symbol
+
+ES5 的对象属性名都是字符串，这容易造成属性名的冲突。比如，你使用了一个他人提供的对象，但又想为这个对象添加新的方法（mixin 模式），新方法的名字就有可能与现有方法产生冲突。如果有一种机制，保证每个属性的名字都是独一无二的就好了，这样就从根本上**防止属性名的冲突**。这就是 ES6 引入Symbol的原因。
+
+注意，Symbol函数前**不能使用new命令**，否则会报错。这是因为生成的 Symbol 是一个原始类型的值，不是对象。也就是说，由于 Symbol 值不是对象，所以不能添加属性。基本上，**它是一种类似于字符串的数据类型**。
+
+Symbol函数可以接受一个字符串作为参数，表示对 Symbol 实例的描述，**主要是为了在控制台显示**，或者转为字符串时，比较容易区分。(注意，Symbol函数的参数只是表示对当前 Symbol 值的**描述**，因此相同参数的Symbol函数的返回值是不相等的。)
+
+#### description
+```js
+const sym = Symbol('foo');
+
+String(sym) // "Symbol(foo)"
+sym.toString() // "Symbol(foo)"
+```
+上面的用法不是很方便。ES2019 提供了一个实例属性description，**直接返回 Symbol 的描述**。
+
+```js
+const sym = Symbol('foo');
+sym.description // "foo"
+```
+
+#### 作为属性名的 Symbol
+```js
+let mySymbol = Symbol();
+
+// 第一种写法
+let a = {};
+a[mySymbol] = 'Hello!';
+
+// 第二种写法
+let a = {
+  [mySymbol]: 'Hello!'
+};
+
+// 第三种写法
+let a = {};
+Object.defineProperty(a, mySymbol, { value: 'Hello!' });
+
+// 以上写法都得到同样结果
+a[mySymbol] // "Hello!"
+```
+
+注意，Symbol 值作为对象属性名时，不能用点运算符
+
+```js
+const mySymbol = Symbol();
+const a = {};
+
+a.mySymbol = 'Hello!';
+a[mySymbol] // undefined
+a['mySymbol'] // "Hello!"
+```
+
+因为点运算符后面总是**字符串**，所以不会读取mySymbol作为标识名所指代的那个值，导致a的属性名实际上是一个字符串，而不是一个 Symbol 值。
+
+同理，在对象的内部，使用 Symbol 值定义属性时，Symbol 值必须放在**方括号之中**。
+
+```js
+let s = Symbol();
+
+let obj = {
+  [s]: function (arg) { ... }
+};
+
+obj[s](123);
+```
+
+上面代码中，如果s不放在方括号中，该属性的键名就是字符串s，而不是s所代表的那个 Symbol 值。
+
+#### 属性名的遍历
+
+Symbol 作为属性名，**遍历对象**的时候，该属性不会出现在for...in、for...of循环中，也不会被Object.keys()、Object.getOwnPropertyNames()、JSON.stringify()返回。
+
+---
+但是，它也不是私有属性，有一个**Object.getOwnPropertySymbols()方法**，可以获取指定对象的所有 Symbol 属性名。该方法返回一个数组，成员是当前对象的所有用作属性名的 Symbol 值。
+
+另一个新的 API，**Reflect.ownKeys()方法**可以返回所有类型的键名，包括常规键名和 Symbol 键名。
+
+由于以 Symbol 值作为键名，不会被常规方法遍历得到。我们可以利用这个特性，为对象定义一些非私有的、但又希望只用于内部的方法。
 
 ### 模块
 和commonJS的区别?
