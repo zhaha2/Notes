@@ -883,6 +883,39 @@ const result = responseList.reduce((acc, cur) => {
 console.log(result); // -> [ { id: 1, a: 1}, {id: 2, a: 2}, {id: 3, a: 3} ]
 ```
 
+#### 随机打乱数组
+
+1. 简单版
+```js
+[12,4,16,3].sort(function() {
+    return .5 - Math.random();
+});
+```
+
+但是这个不够随机。原因在于：
+>v8 在处理 sort 方法时，使用了插入排序和快排两种方案。当目标数组长度小于10时，使用插入排序；反之，使用快排。
+
+其实不管用什么排序方法，大多数排序算法的时间复杂度介于 O(n) 到 O(n2) 之间，元素之间的比较次数通常情况下要远小于 n(n-1)/2，也就意味着有一些元素之间根本就没机会相比较（也就没有了随机交换的可能），这些 sort 随机排序的算法自然也不能真正随机。
+
+通俗的说，其实我们使用 array.sort 进行乱序，理想的方案或者说纯乱序的方案是：数组中每两个元素都要进行比较，这个比较有 50% 的交换位置概率。如此一来，总共比较次数一定为 n(n-1)。而在 sort 排序算法中，大多数情况都不会满足这样的条件。因而当然不是完全随机的结果了。
+
+2. Fisher–Yates shuffle 洗牌算法
+
+```js
+Array.prototype.shuffle = function() {
+    const array = this;
+    let len = array.length, i;
+    while (len) {
+      // len为剩余未交换数组长度，i为随机交换位置
+        i = Math.floor(Math.random() * len--);
+        [array[len], array[i]] = [array[i], array[len]];
+    }
+    return array;
+}
+```
+
+>[如何将一个 JavaScript 数组打乱顺序？](https://www.zhihu.com/question/68330851/answer/266506621)
+
 ### 应用
 
 #### JSONP
@@ -980,99 +1013,6 @@ function getData(data) {
 }
 ```
 
-#### 解析 URL
-```js
-function parseUrl(url) {
-    // scheme://user:passwd@ 部分
-    let schemeStr = '(?:([^/?#]+))?//(?:([^:]*)(?::?(.*))@)?',
-    	// host:port path?query 部分
-        urlStr = '(?:([^/?#:]*):?([0-9]+)?)?([^?#]*)(\\?(?:[^#]*))?',
-    	// #fragment 部分
-    	fragmentStr = '(#(?:.*))'
-        
-    let pattern = RegExp(`^${schemeStr}${urlStr}${fragmentStr}?`)
-    let matched = url.match(pattern) || []
-    return {
-    	protocol: matched[1], // 协议
-    	username: matched[2], // 用户名
-    	password: matched[3], // 密码
-    	hostname: matched[4], // 主机
-    	port: matched[5],     // 端口
-    	pathname: matched[6], // 路径
-    	search: matched[7],   // 查询字符串 queryString
-    	hash: matched[8],     // 锚点
-    }
-}
-
-// 或者你可以这样
-function parseUrl(url) {
-    const urlObj = new URL(url)
-    return {
-    	protocol: urlObj.protocol,
-        username: urlObj.username,
-        password: urlObj.password,
-        hostname: urlObj.hostname,
-        port: urlObj.port,
-        pathname: urlObj.pathname,
-        search: urlObj.search,
-        hash: urlObj.hash
-    }
-}
-```
-
-##### 单独解析查询字符串 queryString：
-```js
-function parseQueryString(query) {
-    if (!query) return {}
-    query = query.replace(/^\?/, '')
-    const queryArr = query.split('&')
-    const result = {}
-    queryArr.forEach(query => {
-    	let [key, value] = query.split('=')
-        try {
-            key = decodeURLComponent(key || '').replace(/\+/g, ' ')
-            value = decodeURLComponent(value || '').replace(/\+/g, ' ')
-        } catch(e) {
-            return console.log(e) // 非法字符不处理
-        }
-        const type = getQueryType(key)
-        switch(type) {
-            case 'ARRAY':
-            	key = key.replace(/\[\]$/, '') // 对于形如 `list[]` 的解析成数组
-                if (!result[key]) {
-                    result[key] = [value]
-                } else {
-                    result[key].push(value)
-                }
-                break;
-            case 'JSON':
-            	key = key.replace(/\{\}$/, '') // 对于形如 obj{} 的解析为对象
-                value = JSON.parse(value)
-                result.json = value
-                break;
-            default:
-                result[key] = value
-        }
-    })
-    return result
-}
-function getQueryType (key) {
-    if (key.endsWith('[]')) return 'ARRAY'
-    if (key.endsWith('{}')) return 'JSON'
-    return 'DEFAULT'
-}
-
-// 或者你可以这样，如果你做好了被面试官打si的准备...
-// 简易版
-function getUrlQuery(search) {
-    let searchObj = {};
-    for (let [key, value] of new URLSearchParams(search)) {
-        searchObj[key] = value
-    }
-    return searchObj
-}
-```
-
 #### 图片懒加载
 图片懒加载 实现的方式一般有三种：
 
@@ -1153,6 +1093,8 @@ Array.from(imgs).forEach(item => observer.observe(item)) // 调用
 #### 渲染几万条数据不卡住页面
 渲染大数据时，合理使用createDocumentFragment和requestAnimationFrame，将操作切分为一小段一小段执行。
 
+利用requestAnimationFrame在浏览器最小的重绘间隔（16.6ms）执行回调的特点，每帧重绘一次
+
 ```js
 setTimeout(() => {
   // 插入十万条数据
@@ -1184,6 +1126,8 @@ setTimeout(() => {
 }, 0)
 ```
 
+>https://chengnuo1.gitbooks.io/my-gitbook/content/interviewQuestions/requestAnimationFrame.html
+
 #### rem的实现原理
 ```js
 function setRem(){
@@ -1193,6 +1137,68 @@ function setRem(){
     doc.style.fontsize=rem+'px';
 }
 addEventListener("resize",setRem);
+```
+
+#### 将VirtualDom转化为真实DOM结构
+
+```js
+// vnode结构：
+// {
+//   tag,
+//   attrs,
+//   children,
+// }
+
+//Virtual DOM => DOM
+function render(vnode, container) {
+  container.appendChild(_render(vnode));
+}
+function _render(vnode) {
+  // 如果是数字类型转化为字符串
+  if (typeof vnode === 'number') {
+    vnode = String(vnode);
+  }
+  // 字符串类型直接就是文本节点
+  if (typeof vnode === 'string') {
+    return document.createTextNode(vnode);
+  }
+  // 普通DOM
+  const dom = document.createElement(vnode.tag);
+  if (vnode.attrs) {
+    // 遍历属性
+    Object.keys(vnode.attrs).forEach(key => {
+      const value = vnode.attrs[key];
+      dom.setAttribute(key, value);
+    })
+  }
+  // 子数组进行递归操作
+  vnode.children.forEach(child => render(child, dom));
+  return dom;
+}
+```
+
+#### 版本号排序
+
+```js
+arr.sort((a, b) => {
+    let i = 0;
+    const arr1 = a.split('.');
+    const arr2 = b.split('.');
+
+    while (true) {
+        const s1 = arr1[i];
+        const s2 = arr2[i++];
+
+        // 哪个长哪个大
+        if (s1 === undefined || s2 === undefined) {
+            return arr2.length - arr1.length;
+        }
+
+        if (s1 === s2) continue;
+
+        return s2 - s1;
+    }
+});
 ```
 
 ### 设计模式
@@ -1438,12 +1444,341 @@ https://www.jianshu.com/p/456af5480cee
 https://blog.csdn.net/zyq522376829/article/details/47686867
 https://blog.csdn.net/v_JULY_v/article/details/6279498
 
-#### 补充
+#### 全排列
+
+递归回溯
+
+```js
+/**
+ * @param {number[]} nums
+ * @return {number[][]}
+ */
+
+var permute = function(nums) {
+    const res = [], path = []
+    const used = new Array(nums.length).fill(false)
+
+    const dfs = () => {
+      // 用path保存当前状态 关键
+        if (path.length == nums.length) {
+          // slice返回新数组，不能直接用原path
+            res.push(path.slice())
+            return
+        }
+
+        for (let i = 0; i < nums.length; i++) {
+            if (used[i]) continue
+            path.push(nums[i])
+            used[i] = true
+            dfs()
+            // 恢复状态
+            path.pop()
+            used[i] = false
+        }
+    }
+
+    dfs()
+    return res
+};
+```
+
+>https://leetcode-cn.com/problems/permutations/
+
+#### 反转链表
+
+```js
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val) {
+ *     this.val = val;
+ *     this.next = null;
+ * }
+ */
+/**
+ * @param {ListNode} head
+ * @return {ListNode}
+ */
+var reverseList = function(head) {
+    let prev = null;
+    let curr = head;
+    while (curr) {
+        const next = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = next;
+    }
+    return prev;
+};
+```
+
+递归
+```js
+var reverseList = function(head) {
+    if (head == null || head.next == null) {
+        return head;
+    }
+    const newHead = reverseList(head.next);
+    head.next.next = head;
+    head.next = null;
+    return newHead;
+};
+```
+
+>https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/solution/fan-zhuan-lian-biao-by-leetcode-solution-jvs5/
+
+#### 环形链表
+
+快慢指针
+
+```js
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val) {
+ *     this.val = val;
+ *     this.next = null;
+ * }
+ */
+
+/**
+ * @param {ListNode} head
+ * @return {boolean}
+ */
+var hasCycle = function(head) {
+    if (head === null || head.next === null) {
+        return false
+    }
+
+    let slow = head, fast = head.next
+    while(fast !== slow) {
+        if (fast === null || fast.next === null) {
+        return false
+        }
+        fast = fast.next.next
+        slow = slow.next
+    }
+
+    return true
+};
+```
+
+>https://leetcode-cn.com/problems/linked-list-cycle/submissions/
+
+#### 青蛙跳台阶
+
+就是斐波那契
+
+递归（会超时）
+```js
+/**
+ * @param {number} n
+ * @return {number}
+ */
+var numWays = function(n) {
+    if (n === 0 || n === 1) {
+        return 1
+    }
+    return numWays(n - 1) + numWays(n - 2)
+};
+```
+
+迭代
+```js
+var numWays = function(n) {
+    let a = 1, b = 1, sum = 1
+
+    for (let i = 2; i <= n; i++ ) {
+        sum = a + b
+        a = b
+        b = sum
+    }
+
+    return sum 
+};
+```
+
+超出大小，精度不准,用BigInt
+```js
+var numWays = function(n) {
+    let a = 1n, b = 1n, sum = 1n
+
+    for (let i = 2; i <= n; i++ ) {
+        sum = a + b
+        a = b
+        b = sum
+    }
+
+    return sum % 1000000007n
+};
+```
 
 ### 正则
 
 #### 驼峰
 
+```js
+var f = function(s) {
+    return s.replace(/-\w/g, function(x) {
+      // 这里匹配到的x是 -w这样的
+        return x.slice(1).toUpperCase();
+    })
+}
+```
+
 #### 模板字符串
 
-#### 补充
+```js
+function render(template, data) {
+  const reg = /\$\{(\w+)\}/; // 模板字符串正则
+  if (reg.test(template)) { // 判断模板里是否有模板字符串
+    const name = reg.exec(template)[1]; // 查找当前模板里第一个模板字符串的字段
+    // 注意replace替换第一个匹配成功的值，加 g才替换所有
+    template = template.replace(reg, data[name]); // 将第一个模板字符串渲染
+    return render(template, data); // 递归的渲染并返回渲染后的结构
+  }
+  return template; // 如果模板没有模板字符串直接返回
+}
+```
+
+```js
+function render(template, data) {
+  const reg = /\$\{(\w+?)\}/g; // 模板字符串正则
+  return template.replace(reg, (match, key) => data[key])
+}
+```
+
+- 注意，replace传入函数的话，第一个参数为match即匹配到的字符串，这里就是 ${a}这种，后面的为组匹配的内容（括号中的内容），比如这里就是 a.
+
+- 如果希望replace不全部替换,用非贪婪（+?）。不过这里不加也对，因为后面的会替换前面的。
+
+#### 千位分隔符
+
+```js
+function parseToMoney(num) {
+  num = parseFloat(num.toFixed(3));
+  let [integer, decimal] = String.prototype.split.call(num, '.');
+  integer = integer.replace(/\d(?=(\d{3})+$)/g, '$&,');
+  return integer + '.' + (decimal ? decimal : '');
+}
+```
+
+
+#### 解析 URL
+```js
+function parseUrl(url) {
+    // 非捕获组匹配
+    // scheme://user:passwd@ 部分
+    let schemeStr = '(?:([^/?#]+))?//(?:([^:]*)(?::?(.*))@)?',
+    	// host:port path?query 部分
+        urlStr = '(?:([^/?#:]*):?([0-9]+)?)?([^?#]*)(\\?(?:[^#]*))?',
+    	// #fragment 部分
+    	fragmentStr = '(#(?:.*))'
+        
+    let pattern = RegExp(`^${schemeStr}${urlStr}${fragmentStr}?`)
+    let matched = url.match(pattern) || []
+    return {
+    	protocol: matched[1], // 协议
+    	username: matched[2], // 用户名
+    	password: matched[3], // 密码
+    	hostname: matched[4], // 主机
+    	port: matched[5],     // 端口
+    	pathname: matched[6], // 路径
+    	search: matched[7],   // 查询字符串 queryString
+    	hash: matched[8],     // 锚点
+    }
+}
+
+// 或者你可以这样
+function parseUrl(url) {
+    const urlObj = new URL(url)
+    return {
+    	protocol: urlObj.protocol,
+        username: urlObj.username,
+        password: urlObj.password,
+        hostname: urlObj.hostname,
+        port: urlObj.port,
+        pathname: urlObj.pathname,
+        search: urlObj.search,
+        hash: urlObj.hash
+    }
+}
+```
+
+##### 单独解析查询字符串 queryString：
+```js
+function parseQueryString(query) {
+    if (!query) return {}
+    query = query.replace(/^\?/, '')
+    const queryArr = query.split('&')
+    const result = {}
+    queryArr.forEach(query => {
+    	let [key, value] = query.split('=')
+        try {
+            key = decodeURLComponent(key || '').replace(/\+/g, ' ')  // 解码
+            value = decodeURLComponent(value || '').replace(/\+/g, ' ')
+        } catch(e) {
+            return console.log(e) // 非法字符不处理
+        }
+        const type = getQueryType(key)
+        switch(type) {
+            case 'ARRAY':
+            	key = key.replace(/\[\]$/, '') // 对于形如 `list[]` 的解析成数组
+                if (!result[key]) {
+                    result[key] = [value]
+                } else {
+                    result[key].push(value)
+                }
+                break;
+            case 'JSON':
+            	key = key.replace(/\{\}$/, '') // 对于形如 obj{} 的解析为对象
+                value = JSON.parse(value)
+                result.json = value
+                break;
+            default:
+                result[key] = value
+        }
+    })
+    return result
+}
+function getQueryType (key) {
+    if (key.endsWith('[]')) return 'ARRAY'
+    if (key.endsWith('{}')) return 'JSON'
+    return 'DEFAULT'
+}
+
+// 或者你可以这样，如果你做好了被面试官打si的准备...
+// 简易版
+function getUrlQuery(search) {
+    let searchObj = {};
+    for (let [key, value] of new URLSearchParams(search)) {
+        searchObj[key] = value
+    }
+    return searchObj
+}
+```
+
+---
+```js
+function parseParam(url) {
+  const paramsStr = /.+\?(.+)$/.exec(url)[1]; // 将 ? 后面的字符串取出来
+  const paramsArr = paramsStr.split('&'); // 将字符串以 & 分割后存到数组中
+  let paramsObj = {};
+  // 将 params 存到对象中
+  paramsArr.forEach(param => {
+    if (/=/.test(param)) { // 处理有 value 的参数
+      let [key, val] = param.split('='); // 分割 key 和 value
+      val = decodeURIComponent(val); // 解码
+      val = /^\d+$/.test(val) ? parseFloat(val) : val; // 判断是否转为数字
+
+      if (paramsObj.hasOwnProperty(key)) { // 如果对象有 key，则添加一个值
+        paramsObj[key] = [].concat(paramsObj[key], val);
+      } else { // 如果对象没有这个 key，创建 key 并设置值
+        paramsObj[key] = val;
+      }
+    } else { // 处理没有 value 的参数
+      paramsObj[param] = true;
+    }
+  })
+
+  return paramsObj;
+}
+```

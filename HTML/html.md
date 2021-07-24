@@ -8,24 +8,37 @@
   - [3.1 语义化好处](#31-语义化好处)
   - [3.2 注意语义化编写](#32-注意语义化编写)
   - [3.3 常见的语义化标签](#33-常见的语义化标签)
-- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype文档类型-的作用)
+- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype档类型-的作)
   - [4.1 为什么HTML5只需要写`<!DOCTYPE HTML>`](#41-为什么html5只需要写doctype-html)
 - [5. script标签中defer和async的区别](#5-script标签中defer和async的区别)
 - [6. head标签](#6-head标签)
 - [6. meta标签](#6-meta标签)
 - [7. HTML5有哪些更新](#7-html5有哪些更新)
   - [7.1 语义化标签](#71-语义化标签)
+    - [7.1.1 title与h1的区别、b与strong的区别、i与em的区别](#711-title与h1的区别b与strong的区别i与em的区别)
   - [7.2 媒体标签](#72-媒体标签)
   - [7.3 表单](#73-表单)
-  - [7.4 进度条、度量器](#74-进度条-度量器)
+    - [7.3.1 H5中新增的语义标签](#731-h5中新增的语义标签)
+    - [7.3.2 表单属性](#732-表单属性)
+    - [7.3.3 表单事件](#733-表单事件)
+  - [7.4 进度条、度量器](#74-进度条度量器)
   - [7.5 Web存储](#75-web存储)
+    - [7.5.1 如何设置localStorage的存储时间](#751-如何设置localstorage的存储时间)
+    - [7.5.2 浏览器本地存储方式及使用场景](#752-浏览器本地存储方式及使用场景)
+      - [7.5.2.1 Cookie](#7521-cookie)
+      - [7.5.2.2 LocalStorage](#7522-localstorage)
+      - [7.5.2.3 SessionStorage](#7523-sessionstorage)
   - [7.6 DOM操作](#76-dom操作)
+    - [7.6.1 获取元素](#761-获取元素)
+    - [7.6.2 类名操作](#762-类名操作)
+    - [7.6.3 自定义属性](#763-自定义属性)
   - [7.7 Drag API](#77-drag-api)
   - [7.8 web worker](#78-web-worker)
   - [7.9 drag API](#79-drag-api)
   - [7.10 其他](#710-其他)
   - [7.11 总结](#711-总结)
 - [8. HTML5的离线储存](#8-html5的离线储存)
+  - [8.1 浏览器是如何对 HTML5 的离线储存资源进行管理和加载的](#81-浏览器是如何对-html5-的离线储存资源进行管理和加载的)
 - [9. img的srcset属性](#9-img的srcset属性)
 - [10. label](#10-label)
 - [11. 浏览器乱码的原因是什么？如何解决](#11-浏览器乱码的原因是什么如何解决)
@@ -385,6 +398,7 @@ JSON.parse取出，判断
 >https://blog.csdn.net/weixin_43254766/article/details/83618630
 
 ##### 7.5.2 浏览器本地存储方式及使用场景
+
 ###### 7.5.2.1 Cookie
 Cookie是最早被提出来的本地存储方式，在此之前，服务端是无法判断网络中的两个请求是否是同一用户发起的，为解决这个问题，Cookie就出现了。Cookie的大小只有4kb，它是一种纯文本文件，每次发起HTTP请求都会携带Cookie。
 
@@ -406,6 +420,64 @@ Cookie是最早被提出来的本地存储方式，在此之前，服务端是�
 **Cookie的使用场景**：
 - 最常见的使用场景就是Cookie和session结合使用，我们**将sessionId存储到Cookie中**，每次发请求都会携带这个sessionId，这样服务端就知道是谁发起的请求，从而响应相应的信息。
 - 可以用来统计页面的点击次数
+
+**Cookie的跨域问题**
+
+Access-Control-Allow-Credentials 是否允许客户端发送请求时携带cookie
+
+- A客户端写：withCredentials:true;
+- B服务器端写：Access-Control-Allow-Credentials:true;
+
+客户端
+```js
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://aaa.cn/localserver/api/corsTest");
+xhr.withCredentials = true; // 设置跨域 Cookie
+xhr.send();
+```
+
+服务端
+```js
+config.cors = {
+    // origin: '*',
+    // origin: 'http://127.0.0.1:9384',
+    origin(ctx) {
+      // return "*"; // 允许来自所有域名请求
+      // return ctx.header.origin;// 当*无法使用时，使用这句,同样允许所有跨域
+      // return 'http://localhost:8080'; //单个跨域请求
+      // 允许多个跨域
+      const allowCors = [
+        'http://localhost:9384',
+        'http://127.0.0.1:9384',
+        'http://172.16.92.62:9384',
+      ];
+      return allowCors.indexOf(ctx.header.origin) > -1 ? ctx.header.origin : '';
+    },
+    credentials: true, // 前台可以携带cookies 无此选项的话，还是上面的跨域
+    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH,OPTIONS',
+  };
+```
+---
+```js
+@Override
+public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    System.out.println("work");
+    HttpServletResponse response = (HttpServletResponse) servletResponse;
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Access-Control-Allow-Methods", "POST, GET");
+    response.setHeader("Access-Control-Max-Age", "3600");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
+    response.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+    filterChain.doFilter(servletRequest, servletResponse);
+}
+```
+
+此外还可能有SameSite问题
+
+1. 将SameSite属性值改为None, 同时 将secure属性设置为true。且需要将后端服务域名必须使用https协议访问。
+2. 由于设置SameSite = None，有CSRF风险，所以，最佳方案是用token代替Cookie方式作验证。
+
+>https://segmentfault.com/a/1190000039227924
 
 ---
 作者：但愿不头疼
