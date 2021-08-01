@@ -293,11 +293,9 @@ function getType(value) {
   }
   // 判断数据是引用类型的情况
   if (typeof value === "object") {
-    // 比如 [object, Array]
-    let valueClass = Object.prototype.toString.call(value),
-    // 删除字符串最后一位（]）
-      type = Array.prototype.slice.call(arr, 0,-1).join("").toLowerCase();
-    return type
+    // 比如 [object Array]
+    return Object.prototype.toString.call(obj)
+              .replace('[object ', '').replace(']', '').toLowerCase()
   } else {
     // 判断数据是基本数据类型的情况和函数的情况
     return typeof value;
@@ -1020,10 +1018,19 @@ function getData(data) {
 - getBoundingClientRect
 - IntersectionObserver
 
+>[js实现图片懒加载原理](https://blog.csdn.net/w1418899532/article/details/90515969?utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromMachineLearnPai2%7Edefault-4.control&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromMachineLearnPai2%7Edefault-4.control)
+
+[见](../css/03-css布局.md###6.如何判断元素是否到达可视区域 )
+
 ##### clientHeight、scrollTop 和 offsetTop
 ![](image/2021-07-14-15-52-39.png)
 
 可以看到图片的 offsetTop 小于 紫色 的线（scrollHeight + clientHeight）就会显示在窗口中。
+
+注意offsetTop是针对外层元素的，不一定是body元素
+
+scrollTop是指某个**可滚动区块**（比如overflow:auto）向下滚动的距离，比如向下滚动了10个像素，那么这个元素的scrollTop属性值就是10，这个属性的值是可读写的，且不需要设置position
+这里的scrollTop是html文档卷起的长度
 
 当前可视区域的高度，在现代浏览器及 IE9 以上的浏览器中，可以使用window.innerHeight属性获取，在低版本的 IE 中使用document.documentElment.clientHeight 获取
 
@@ -1090,6 +1097,8 @@ const observer = new IntersectionObserver(changes => {
 Array.from(imgs).forEach(item => observer.observe(item)) // 调用
 ```
 
+>http://www.ruanyifeng.com/blog/2016/11/intersectionobserver_api.html
+
 #### 渲染几万条数据不卡住页面
 渲染大数据时，合理使用createDocumentFragment和requestAnimationFrame，将操作切分为一小段一小段执行。
 
@@ -1133,8 +1142,11 @@ setTimeout(() => {
 function setRem(){
     let doc=document.documentElement;
     let width=doc.getBoundingClientRect().width;
-    let rem=width/75
+    let rem=width/10
     doc.style.fontsize=rem+'px';
+
+    // or
+    // document.documentElement.style.fontSize = document.documentElement.clientWidth / 10 + 'px';
 }
 addEventListener("resize",setRem);
 ```
@@ -1199,6 +1211,124 @@ arr.sort((a, b) => {
         return s2 - s1;
     }
 });
+```
+
+#### 实现sticky
+
+##### offsetTop
+
+我们知道 offsetTop 是相对定位父级的偏移量，倘若需要滚动吸顶的元素出现定位父级元素，那么 offsetTop 获取的就不是元素距离页面顶部的距离。
+
+我们可以自己对 offsetTop 做以下处理：
+
+```js
+getOffset: function(obj,direction){
+    let offsetL = 0;
+    let offsetT = 0;
+    while( obj!== window.document.body && obj !== null ){
+        offsetL += obj.offsetLeft;
+        offsetT += obj.offsetTop;
+        obj = obj.offsetParent;
+    }
+    if(direction === 'left'){
+        return offsetL;
+    }else {
+        return offsetT;
+    }
+}
+
+// 使用
+...
+window.addEventListener('scroll', self.handleScrollTwo);
+...
+handleScrollTwo: function() {
+    let self = this;
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+    let offsetTop = self.getOffset(self.$refs.pride_tab_fixed);
+    // let offsetTop = scroll.getBoundingClientRect().top;
+    // 划到了顶部就吸顶
+    // 被划上去了scrollTop就小于offsetTop了
+    // 正好和懒加载相反
+    self.titleFixed = scrollTop > offsetTop;
+}
+...
+```
+
+##### getBoundingClientRect
+
+这个 API 可以告诉你页面中某个元素相对浏览器视窗上下左右的距离。
+
+```js
+handleScroll: function () {
+  let offsetTop = this.$refs.pride_tab_fixed.getBoundingClientRect().top;
+  this.titleFixed = offsetTop < 0;
+  // some code
+}
+
+···
+window.addEventListener('scroll', this.handleScroll);
+```
+
+>[【前端词典】5 种滚动吸顶实现方式的比较[性能升级版]](https://juejin.cn/post/6844903815041269774)
+
+#### Promise串行输出
+
+立即输出1，2s后输出2，3s后输出3
+
+1. 循环
+
+```js
+const promise1 = ()=>Promise.resolve(1)
+const promise2 = ()=> new Promise(resolve=>{
+  setTimeout(() => {
+    resolve(2)
+  }, 2000);
+})
+const promise3 = ()=> new Promise(resolve=>{
+  setTimeout(() => {
+    resolve(3)
+  }, 3000);
+})
+
+const promiseList = [promise1,promise2,promise3]
+
+---
+function promiseChain(tasks) {
+  let promise = Promise.resolve()
+
+  tasks.forEach(task => {
+      promise = promise
+                  .then(task)
+                  .then(res => {
+                    console.log(res);
+                  })
+    })
+    return promise
+}
+
+---
+promiseChain(promiseList) .then(() => console.log('finished'))
+```
+
+2. reduce
+
+```js
+function promiseChain2(tasks) {
+  return tasks.reduce((pre, cur)=> {
+    return pre.then(cur)
+             .then(res => console.log(res))
+  }, Promise.resolve())
+}
+```
+
+3. Async/Await
+
+```js
+async function promiseChain3(tasks) {
+  for (const task of tasks) {
+    await task()
+  }
+}
 ```
 
 ### 设计模式

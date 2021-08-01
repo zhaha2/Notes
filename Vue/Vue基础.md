@@ -3,10 +3,16 @@ https://www.yuque.com/cuggz/interview/hswu8g#8d6cd1d13b8d85c0090dd20084f39044
 [30 道 Vue 面试题，内含详细讲解（涵盖入门到精通，自测 Vue 掌握程度）](https://github.com/fengshi123/blog/issues/14)
 [Vue 面试知识点总结【持续更新中～】](https://segmentfault.com/a/1190000019633325)
 
+>源码
+>https://ustbhuangyi.github.io/vue-analysis/
+>https://juejin.cn/post/6844903986978357256#heading-0
+>http://zhouweicsu.github.io/blog/2017/03/07/vue-2-0-reactivity/
 
 [vue生命周期探究（一）](https://segmentfault.com/a/1190000008879966)
 ![](image/2021-07-16-21-30-35.png)
 ![](image/2021-07-19-17-06-22.png)
+
+稍后[基于Vue实现一个简易MVVM](https://juejin.cn/post/6844904099704471559#heading-14)
 
 [剖析Vue原理&实现双向绑定MVVM](https://segmentfault.com/a/1190000006599500)
 看 [0 到 1 掌握：Vue 核心之数据双向绑定](https://juejin.cn/post/6844903903822086151#heading-13)
@@ -23,12 +29,125 @@ nextTick 可以让我们在下次 DOM 更新循环结束之后执行延迟回调
 [Vue3.0 新特性以及使用经验总结](https://juejin.cn/post/6940454764421316644#heading-15)
 
 
-### 问题
+## 问题
+
+### vue框架有什么特点
+
+数据驱动、组件化
+
+### 双向绑定
+
+#### 说一下Vue的工作原理（响应式原理）
+
+Vue响应式底层实现方法是 Object.defineProperty() 方法，该方法中存在一个getter和setter的可选项，可以对属性值的获取和设置造成影响
+
+从                                        3232 当你把一个普通的 JavaScript 对象传入 Vue 实例作为 data 选项，Vue 将遍历此对象所有的 property，并使用 Object.defineProperty 把这些 property 全部转为 getter/setter。
+
+- 这些 getter/setter 对用户来说是不可见的，但是在内部它们让 Vue 能够追踪依赖，在 property 被访问和修改时通知变更。
+
+- 每个组件实例都对应一个 watcher 实例，它会在组件渲染的过程中把“接触”过的数据 property 记录为依赖。之后当依赖项的 setter 触发时，会通知 watcher，从而使它关联的组件重新渲染。
+
+>作者：Jieunsi
+链接：https://www.nowcoder.com/discuss/670720?type=0&order=0&pos=13&page=1&ncTraceId=&channel=-1&source_id=discuss_tag_nctrack
+
+>[Vue2.0 源码阅读：响应式原理](http://zhouweicsu.github.io/blog/2017/03/07/vue-2-0-reactivity/)
 
 #### 为什么3.0用proxy取代Object.defineProperty
 https://www.jianshu.com/p/860418f0785c
 
-#### 在v-model上怎么用Vuex中state的值？
+#### 依赖收集
+
+Vue是一个实现数据驱动视图的框架~~ 我们都知道，Vue能够实现当一个数据变更时，视图就进行刷新，而且用到这个数据的其他地方也会同步变更；而且，这个数据必须是在有被依赖的情况下，视图和其他用到数据的地方才会变更。 所以，Vue要能够知道一个数据是否被使用，实现这种机制的技术叫做依赖收集根据Vue官方文档的介绍，其原理如下图所示：
+
+![](image/2021-08-01-11-10-16.png)
+
+---
+```js
+new Vue({
+    template: 
+        `<div>
+            <span>text1:</span> {{text1}}
+            <span>text2:</span> {{text2}}
+        <div>`,
+    data: {
+        text1: 'text1',
+        text2: 'text2',
+        text3: 'text3'
+    }
+});
+```
+这里text3改变不会导致重新渲染，因为没对他进行依赖收集
+
+##### Watcher
+
+**每个组件实例都对应一个 watcher 实例**，它会在组件渲染的过程中把“接触”过的数据 property 记录为依赖。之后当依赖项的 setter 触发时，会通知 watcher，从而使它关联的组件重新渲染。
+(一个Vue组件实例对应一个Watcher。)
+
+**Vue里面有3种对象能创建Watcher实例**：component，watch，computed。
+
+Watcher类的实现比较复杂，因为他的实例分为渲染 watcher（render-watcher）、计算属性 watcher（computed-watcher）、侦听器 watcher（normal-watcher）三种，
+这三个实例分别是在三个函数中构建的：mountComponent 、initComputed和Vue.prototype.$watch。
+
+- normal-watcher：我们在组件钩子函数watch 中定义的，都属于这种类型，即**只要监听的属性改变了，都会触发定义好的回调函数**，这类watch的expression是计算属性中的属性名。
+
+- computed-watcher：我们在组件钩子函数computed中定义的，都属于这种类型，每一个 computed 属性，最后都会生成一个对应的 watcher 对象，但是这类 watcher 有个特点：当计算属性依赖于其他数据时，属性并不会立即重新计算，**只有之后其他地方需要读取属性的时候，它才会真正计算**，即具备 lazy（懒计算）特性。这类watch的expression是我们写的回调函数的字符串形式。
+
+- render-watcher：每一个组件都会有一个 render-watcher, 当 data/computed 中的属性改变的时候，会调用该 render-watcher 来更新组件的视图。这类watch的expression是 function () {vm._update(vm._render(), hydrating);}。
+
+除了功能上的区别，这三种 watcher 也有固定的执行顺序，分别是：computed-render -> normal-watcher -> render-watcher。
+
+这样安排是有原因的，这样就能尽可能的保证，在更新组件视图的时候，computed 属性已经是最新值了，如果 render-watcher 排在 computed-render 前面，就会导致页面更新的时候 computed 值为旧数据。
+
+---
+观察者函数经过Watcher是这么被包装的： - 模板渲染：this._watcher = new Watcher(this, render, this._update) - 计算属性：
+
+```js
+computed: {
+    name() {
+        return `${this.firstName} ${this.lastName}`;
+    }
+}
+/*
+会形成
+new Watcher(this, function name() {
+    return `${this.firstName} ${this.lastName}`
+}, callback);
+*/
+```
+
+>作者：一只小考拉
+链接：https://juejin.cn/post/6844903702881386504
+
+---
+当我们去实例化一个渲染 watcher 的时候，首先进入 watcher 的构造函数逻辑，然后会执行它的 `this.get()` 方法，进入 get 函数，首先会执行 `pushTarget(this)`
+
+实际上就是把 Dep.target 赋值为当前的渲染 watcher 并压栈（为了恢复用）。接着又执行了 `this.getter` 对应就是 `updateComponent` 函数，这实际上就是在执行：
+
+`vm._update(vm._render(), hydrating)`
+
+它会先执行` vm._render()` 方法，因为之前分析过这个**方法会生成 渲染 VNode**，并且在这个过程中会对 vm 上的数据访问，这个时候就**触发**了数据对象的 getter。
+
+>也就是模板编译在beforeMount就做好了，但是Vnode在`new Watcher`的时候（beforeMount之后mounted之前）才生成
+
+>看 https://ustbhuangyi.github.io/vue-analysis/v2/reactive/getters.html#%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90
+
+### 渲染 虚拟DOM
+
+![](image/2021-08-01-14-57-38.png)
+
+>源码 看 https://github.com/AnnVoV/blog/issues/7
+>稍后 https://zhouweicsu.github.io/blog/2017/04/21/vue-2-0-template/
+
+### 生命周期
+
+Vue 实例有一个完整的生命周期，也就是从开始创建、初始化数据、编译模版、挂载Dom -> 渲染、更新 -> 渲染、卸载等75一系列过程，我们称这是Vue的生命周期。 
+
+![](image/2021-07-31-13-32-40.png)
+
+流程图
+![](image/2021-07-31-13-32-51.png)
+
+### 在v-model上怎么用Vuex中state的值？
 需要通过computed计算属性来转换。
 
 ```js
@@ -46,12 +165,7 @@ computed: {
 }
 ```
 
-#### router和route的区别
-route为当前router跳转对象里面可以获取name、path、query、params等
-
-router为VueRouter实例，想要导航到不同URL，则使用router.push方法
-
-#### 你都做过哪些 Vue 的性能优化
+### 你都做过哪些 Vue 的性能优化
 
 对象层级不要过深，否则性能就会差
 不需要响应式的数据不要放到 data 中（可以用 Object.freeze() 冻结数据）
@@ -72,12 +186,13 @@ v-for 遍历必须加 key，key 最好是 id 值，且避免同时使用 v-if
 来源：掘金
 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 
-#### Object.freeze() 是“浅冻结”
+### Object.freeze() 是“浅冻结”
 [Vue性能提升之Object.freeze()](https://juejin.cn/post/6844903922469961741#heading-6)
 
 Vue添加响应式的时候会先判断configurable是否为true，因为后面会劫持数据，改写get和set方法。所以freeze了就不能响应式了。
 
-#### 说一下diff算法
+### 说一下diff算法
+
 稍后 [详解vue的diff算法](https://juejin.cn/post/6844903607913938951)
 
 作者：洛霞
@@ -89,8 +204,18 @@ Vue添加响应式的时候会先判断configurable是否为true，因为后面�
 7.1. 永远只比较同层节点。
 7.2. 不同的两个节点产生两个不同的树。
 7.3. 通过key值指定哪些更新是相同的。
+(尽可能的复用旧的节点)
 
-#### React VS Vue
+只有当新旧子节点的类型都是多个子节点时，核心 Diff 算法才派得上用场
+
+---
+vdom使用diff算法是为了找出需要更新的节点。vdom使用diff算法来比对两个虚拟dom的差异，以最小的代价比对2颗树的差异，在前一个颗树的基础上生成最小操作树，但是这个算法的时间复杂度为n的三次方=O(nnn)，当树的节点较多时，这个算法的时间代价会导致算法几乎无法工作。
+
+>稍后 https://juejin.cn/post/6844904078196097031#heading-27
+
+>https://github.com/fengshi123/blog/blob/master/articles/%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%9AVue%E6%A0%B8%E5%BF%83%E4%B9%8B%E8%99%9A%E6%8B%9FDOM.md
+
+### React VS Vue
 [React VS Vue —— 你需要知道的前端两大“框架”的异同](http://www.yangyong.xyz/2019/07/29/react-vs-vue/)
 
 ### Vuex
@@ -202,3 +327,29 @@ history.go(-2) // 后退2次
 
 - 优点：路径比较正规，没有井号 #
 - 缺点：兼容性不如 hash，且需要服务端支持，否则一刷新页面就404了
+
+#### router和route的区别
+
+route为当前router跳转对象里面可以获取name、path、query、params等
+
+router为VueRouter实例，想要导航到不同URL，则使用router.push方法
+
+### v-if v-show
+
+#### v-if 原理
+
+基于数据驱动的理念，当 v-if 指令对应的 value 为 false 的时候会预先**创建一个注释节点**。value 发生变化时，命中派发更新的逻辑，对新旧组件树进行 patch，从而完成使用 v-if 指令元素的动态显示隐藏。
+
+![](image/2021-07-31-13-40-17.png)
+
+>https://segmentfault.com/a/1190000039005215
+
+### key
+
+key 的特殊 attribute 主要用在 Vue 的虚拟 DOM 算法，在新旧 nodes 对比时辨识 VNodes。如果不使用 key，Vue 会使用一种最大限度减少动态元素并且尽可能的尝试就地修改/复用相同类型元素的算法。而使用 key 时，它会基于 key 的变化重新排列元素顺序，并且会移除 key 不存在的元素。
+
+有相同父元素的子元素必须有独特的 key。重复的 key 会造成渲染错误。
+
+最常见的用例是结合 v-for
+
+>https://cn.vuejs.org/v2/api/#key
