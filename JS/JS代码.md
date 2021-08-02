@@ -479,6 +479,7 @@ console.log(obj2); //{a:1,b:{c:2}}
 ```js
 function deepClone(obj) {
     // 如果是 值类型 或 null，则直接return
+     // 注意 函数也是直接返回，因为他不可遍历
     if(typeof obj !== 'object' || obj === null) {
         return obj
     }
@@ -523,6 +524,7 @@ b.a = a
  */
 function deepClone( originObj, map = new WeakMap() ) {
     if(!originObj || typeof originObj !== 'object') return originObj;  //空或者非对象则返回本身
+    // 注意 函数也是直接返回，因为他不可遍历
  
     //如果这个对象已经被记录则直接返回
     if( map.get(originObj) ) {

@@ -129,7 +129,8 @@ new Watcher(this, function name() {
 
 >也就是模板编译在beforeMount就做好了，但是Vnode在`new Watcher`的时候（beforeMount之后mounted之前）才生成
 
->看 https://ustbhuangyi.github.io/vue-analysis/v2/reactive/getters.html#%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90
+>看 https://ustbhuangyi.github.io/vue-analysis/v2/reactive/getters.html#%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90 源码
+>看 https://github.com/AnnVoV/blog/issues/7 源码 很详细
 
 ### 渲染 虚拟DOM
 
@@ -137,6 +138,32 @@ new Watcher(this, function name() {
 
 >源码 看 https://github.com/AnnVoV/blog/issues/7
 >稍后 https://zhouweicsu.github.io/blog/2017/04/21/vue-2-0-template/
+>稍后 https://www.jianshu.com/p/af0b398602bc
+
+#### diff算法
+
+创建一个React元素树之后，在更新的时候将创建一个新的React元素树，React使用Diff算法对元素树进行比对，只更新发生了改变的部分，避免多余的性能消耗。
+主要是三个思想，可以从这三个谈：
+- 永远只比较同层节点。
+- 不同的两个节点产生两个不同的树。
+- 通过key值指定哪些更新是相同的。
+(尽可能的复用旧的节点)
+
+只有当新旧子节点的类型都是多个子节点时，核心 Diff 算法才派得上用场
+
+>作者：洛霞
+链接：https://www.nowcoder.com/discuss/459995?channel=-1&source_id=profile_follow_post_nctrack
+
+---
+vdom使用diff算法是为了找出需要更新的节点。vdom使用diff算法来比对两个虚拟dom的差异，以最小的代价比对2颗树的差异，在前一个颗树的基础上生成最小操作树
+<!-- 但是这个算法的时间复杂度为n的三次方=O(nnn)，当树的节点较多时，这个算法的时间代价会导致算法几乎无法工作。 -->
+
+>稍后 https://juejin.cn/post/6844904078196097031#heading-27
+
+>稍后 [详解vue的diff算法](https://juejin.cn/post/6844903607913938951)
+
+
+>https://github.com/fengshi123/blog/blob/master/articles/%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%9AVue%E6%A0%B8%E5%BF%83%E4%B9%8B%E8%99%9A%E6%8B%9FDOM.md
 
 ### 生命周期
 
@@ -146,6 +173,8 @@ Vue 实例有一个完整的生命周期，也就是从开始创建、初始化�
 
 流程图
 ![](image/2021-07-31-13-32-51.png)
+
+>看 https://github.com/AnnVoV/blog/issues/7 源码 很详细
 
 ### 在v-model上怎么用Vuex中state的值？
 需要通过computed计算属性来转换。
@@ -183,37 +212,11 @@ v-for 遍历必须加 key，key 最好是 id 值，且避免同时使用 v-if
 
 >作者：Big shark@LX
 链接：https://juejin.cn/post/6961222829979697165
-来源：掘金
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 
 ### Object.freeze() 是“浅冻结”
 [Vue性能提升之Object.freeze()](https://juejin.cn/post/6844903922469961741#heading-6)
 
 Vue添加响应式的时候会先判断configurable是否为true，因为后面会劫持数据，改写get和set方法。所以freeze了就不能响应式了。
-
-### 说一下diff算法
-
-稍后 [详解vue的diff算法](https://juejin.cn/post/6844903607913938951)
-
-作者：洛霞
-链接：https://www.nowcoder.com/discuss/459995?channel=-1&source_id=profile_follow_post_nctrack
-来源：牛客网
-
-创建一个React元素树之后，在更新的时候将创建一个新的React元素树，React使用Diff算法对元素树进行比对，只更新发生了改变的部分，避免多余的性能消耗。
-主要是三个思想，可以从这三个谈：
-7.1. 永远只比较同层节点。
-7.2. 不同的两个节点产生两个不同的树。
-7.3. 通过key值指定哪些更新是相同的。
-(尽可能的复用旧的节点)
-
-只有当新旧子节点的类型都是多个子节点时，核心 Diff 算法才派得上用场
-
----
-vdom使用diff算法是为了找出需要更新的节点。vdom使用diff算法来比对两个虚拟dom的差异，以最小的代价比对2颗树的差异，在前一个颗树的基础上生成最小操作树，但是这个算法的时间复杂度为n的三次方=O(nnn)，当树的节点较多时，这个算法的时间代价会导致算法几乎无法工作。
-
->稍后 https://juejin.cn/post/6844904078196097031#heading-27
-
->https://github.com/fengshi123/blog/blob/master/articles/%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%9AVue%E6%A0%B8%E5%BF%83%E4%B9%8B%E8%99%9A%E6%8B%9FDOM.md
 
 ### React VS Vue
 [React VS Vue —— 你需要知道的前端两大“框架”的异同](http://www.yangyong.xyz/2019/07/29/react-vs-vue/)
@@ -353,3 +356,13 @@ key 的特殊 attribute 主要用在 Vue 的虚拟 DOM 算法，在新旧 nodes 
 最常见的用例是结合 v-for
 
 >https://cn.vuejs.org/v2/api/#key
+
+### computed watch
+
+1. computed是计算属性，类似于过滤器,对绑定到视图的数据进行处理,并监听变化进而执行对应的方法
+   计算属性是基于它们的依赖进行缓存的。**只在相关依赖发生改变时它们才会重新求值**。
+2. watch是一个侦听的动作，用来观察和响应 Vue 实例上的数据变动。
+
+computed主要用于对同步数据的处理，watch则主要用于观测某个值的变化去完成一段开销较大的复杂业务逻辑
+
+>源码 [我想用大白话讲清楚watch和computed](https://juejin.cn/post/6924911113012248590) Watcher

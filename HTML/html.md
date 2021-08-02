@@ -895,6 +895,9 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/img#attr-loading 用lo
   
 以上webpack都可以搞定
 
+>Gzip
+从HTTP / 1.1开始，客户端可以通过使用HTTP请求中的Accept-Encoding: gzip, deflate来指示对压缩的支持。如果服务器在请求中看到此标头，则可以使用客户端列出的方法之一压缩响应，服务器通过响应中的Content-Encoding: gzip通知客户端采用gzip压缩。
+
 避免同一时间的过多次数请求
 - CSS 实现雪碧图：使用background-position共享一张图
 - 图片懒加载：监听滚动后offsetTop,  使用src 替换 src（真实路径）
@@ -914,6 +917,8 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/img#attr-loading 用lo
 
 >作者：天要
 链接：https://www.zhihu.com/question/458055934/answer/1954186301
+
+>https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/%E5%89%8D%E7%AB%AF%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88.md
 
 #### 前端需要注意哪些SEO
 作者：不拿offer不放弃_
