@@ -26,7 +26,8 @@
 2. DOM树变化（如：增删节点）
 3. Render树变化（如：padding改变）
 4. 浏览器窗口resize
-5. 获取元素的某些属性和方法（例如）
+5. 设置style属性
+6. 获取元素的某些属性和方法（例如）
 - offsetTop、offsetLeft、offsetWidth、offsetHeight
 - scrollTop、scrollLeft、scrollWidth、scrollHeight
 - clientTop、clientLeft、clientWidth、clientHeight
@@ -36,7 +37,7 @@
 - 具体可以访问这个网站：https://gist.github.com/paulirish/5d52fb081b3570c81e3a （有可能打不开，可以多次刷新试试）
 
 
-6. 回流必定引起重绘，重绘可以单独触发
+7. 回流必定引起重绘，重绘可以单独触发
 
 >见
 https://juejin.cn/post/6844904119157669902
@@ -44,15 +45,6 @@ https://juejin.cn/post/6844904063641862151
 
 #### 如何最小化重绘(repaint)和回流(reflow)：
 
-* 需要要对元素进行复杂的操作时，可以先隐藏(display:"none")，操作完成后再显示
-* 需要创建多个DOM节点时，使用DocumentFragment创建完后一次性的加入document
-* 缓存Layout属性值，如：var left = elem.offsetLeft; 这样，多次使用 left 只产生一次回流
-* 尽量避免用table布局（table元素一旦触发回流就会导致table里所有的其它元素回流）
-* 避免使用css表达式(expression)，因为每次调用都会重新计算值（包括加载页面）
-* 尽量使用 css 属性简写，如：用 border 代替 border-width, border-style, border-color
-* 批量修改元素样式：`elem.className` 和 `elem.style.cssText` 代替 `elem.style.xxx`
-
----
 其实浏览器很聪明，不可能每次修改样式就 reflow 或者 repaint 一次，一般来说，浏览器会积累一批操作，然后做一次 reflow。但是我们也应该减少重绘重排的次数。
 
 我们知道操作DOM是一个高成本的操作，不仅是因为本身js与DOM的链接访问，还包括操作DOM后引起一连串的重排，因此，从性能优化角度，我们可以从以下几个方面着手：
@@ -72,11 +64,42 @@ https://juejin.cn/post/6844904063641862151
 3. css及优化动画
 - 少用css表达式
 - 减少通过JavaScript代码修改元素样式，尽量使用修改class名方式操作样式或动画；
-- 可以把动画效果应用到position属性为absolute或fixed的元素上，这样对其他元素影响较小
+- 可以把动画效果应用到position属性为absolute或fixed的元素上，这样对其他元素影响较小(**脱离标准流**)
 - 动画实现的速度的选择。比如实现一个动画，以1个像素为单位移动这样最平滑，但是reflow就会过于频繁，大量消耗CPU资源，如果以3个像素为单位移动则会好很多。
 - 开启动画的GPU加速，把渲染计算交给GPU。
 >见
 https://blog.csdn.net/qq_38128179/article/details/101023305
+
+---
+1. css3硬件加速（GPU加速）
+
+   可以让transform、opacity、filters这些动画不会引起回流重绘
+
+2. 避免逐个修改节点样式，尽量一次性修改(使用cssText或者修改CSS的class)
+
+3. 使用DocumentFragment将需要多次修改的DOM元素缓存，最后一次性append到真实DOM中渲染
+```js
+function appendDataToElement(appendToElement, data) {
+    let li;
+    for (let i = 0; i < data.length; i++) {
+    	li = document.createElement('li');
+        li.textContent = 'text';
+        appendToElement.appendChild(li);
+    }
+}
+const ul = document.getElementById('list');
+const fragment = document.createDocumentFragment();
+appendDataToElement(fragment, data);
+ul.appendChild(fragment);
+```
+
+4. 可以将需要多次修改的DOM元素设置display:none，操作完再显示。（**因为隐藏元素不在render树内**，因此修改隐藏元素不会触发回流重绘）
+
+5. 避免多次读取某些属性（避免触发同步布局事件）(**缓存**Layout属性值，如：var left = elem.offsetLeft; 这样，多次使用 left 只产生一次回流)
+   
+6. 避免使用css表达式(expression)，因为每次调用都会重新计算值（包括加载页面）(因为浏览器要获取当前页面最新的值，要先回流)
+
+>[你真的了解回流和重绘吗?请看这里](https://juejin.cn/post/6844904063641862151#heading-7)
 
 ### 2. 如何避免FOUC
 `FOUC`即无样式内容闪烁也可以称为文档样式短暂失效，主要就是指`HTML`已加载而样式表并未加载，此后样式表再加载而产生的闪烁现象。
@@ -86,6 +109,7 @@ https://blog.csdn.net/qq_38128179/article/details/101023305
 
 
 #### 2.2 尽量避免使用@import
+**主要**
 尽量使用`<link>`而避免使用`@import`，当`HTML`文件被加载时，`<link>`引用的文件会同时被加载，而`@import`引用的文件则会等页面全部下载完毕再被加载，所以有时候浏览`@import`加载`CSS`的页面时会没有样式，会出现`FOUC`现象，网速慢的时候就比较明显。此外当`<link>`与`@import`混用可能会对网页性能有负面影响，在一些低版本`IE`中`<link>`与`@import`混用会导致样式表文件逐个加载，破坏并行下载的方式导致页面加载变慢。此外无论是哪种浏览器，若在`<link>`中引入的`CSS`中继续使用`@import`加载外部`CSS`，同样会导致顺序加载而不是并行加载，因为浏览器需要先解析`<link>`引入的`CSS`发现`@import`外部`CSS`后再次引入外部`CSS`，这样就导致页面加载变慢。
 
 #### 3. style在body前与在body后的区别
@@ -99,6 +123,11 @@ https://blog.csdn.net/qq_38128179/article/details/101023305
 此外，如果将样式放在`<body>`，当已声明的样式被解析时，浏览器必须重新呈现页面(加载时新的和旧的)。
 >https://blog.csdn.net/weixin_43438052/article/details/109703897
 
+---
+当css还没加载出来的时候，页面显示白屏（css阻塞页面渲染）
+
+？不同浏览器的处理CSS和HTML的方式是不同的：
+css未加载前，ie和chrome会先白屏，但是firefox会先显示html（对于 Firefox 会表现出 FOUC 。）。
 
 #### 4. 浏览器渲染机制
 https://blog.csdn.net/wozaixiaoximen/article/details/50640954##1
@@ -200,13 +229,49 @@ Webpack 能处理 CSS 吗：
 * Webpack 在裸奔的状态下，是不能处理 CSS 的，Webpack 本身是一个面向 JavaScript 且只能处理 JavaScript 代码的模块化打包工具；
 * Webpack 在 loader 的辅助下，是可以处理 CSS 的。
 
+### css-loader 和 style-loader
 如何用 Webpack 实现对 CSS 的处理：
 * Webpack 中操作 CSS 需要使用的两个关键的 loader：css-loader 和 style-loader
-* 注意，答出“用什么”有时候可能还不够，面试官会怀疑你是不是在背答案，所以你还需要了解每个 loader 都做了什么事情：
+* 注意，答出“用什么”有时候可能还不够，面试官会怀疑你是不是在背答案，所以你还需要了解每个 loader **都做了什么事情**：
   * css-loader：导入 CSS 模块，对 CSS 代码进行编译处理；
-  * style-loader：创建style标签，把 CSS 内容写入标签。
+  >CSS 文件之间通过了 **@import 语法**建立了引入的关系，而 css-loader 则可以解析这种关系，然后把多个的 css 文件关联在一起，并将 css 转换为 CommonJS 模块。
 
+  >css-loader 解释(interpret) @import 和 url() ，会 import/require() 后再解析(resolve)它们。
+
+  * style-loader：创建style标签，把 CSS 内容写入标签。（将 CSS 样式注入到 DOM 中。）
+
+经过css-loader的转译，我们已经得到了完整的css样式代码，style-loader的作用就是将结果以style标签的方式插入DOM树中。
+
+直觉上似乎我们只需要像下面这样返回一段js代码，将css-loader返回的结果插入DOM就行：
+```js
+module.exports = function (content) {
+  return `
+    const style = document.createElement('style');
+    style.innerHTML = '${content}';
+    document.head.appendChild(style);
+  `;
+};
+```
+但css-loader返回的不是css样式代码的文本，而**是一个js模块的代码**，将这些js代码直接放进style标里显然是不行的。
+
+style-loader 通过一个JS脚本创建一个style标签，里面包含一些样式。
+
+---
 在实际使用中，**css-loader 的执行顺序一定要安排在 style-loader 的前面**。因为只有完成了编译过程，才可以对 css 代码进行插入；若提前插入了未编译的代码，那么 webpack 是无法理解这坨东西的，它会无情报错。
+
+但是**写法上**css-loader要在后面，因为他是从右向左解析度。
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [ 'style-loader', 'css-loader' ]
+      }
+    ]
+  }
+}
+```
 
 ### 4. 前端优化
 https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/%E5%89%8D%E7%AB%AF%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88.md

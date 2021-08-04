@@ -218,6 +218,7 @@ function fn() {
     console.log('我要吃饭了', index++);
 }
 
+// 关键是await
 async function play() {
     let a = await sleep(fn, 1000);
     a();

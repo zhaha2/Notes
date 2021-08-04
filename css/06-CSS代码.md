@@ -13,9 +13,9 @@ https://juejin.cn/post/6960844183611375630#heading-26 【CSS】CSS布局解决�
       height:500px;
   }
   .right {
-      width:100%;
       background-color: aquamarine;
       height:500px;  
+      overflow: hidden;
   }
 ```
 
@@ -243,6 +243,7 @@ https://blog.csdn.net/zhoulei1995/article/details/80161240 CSS 负边距
         .content {
     			/* overflow: hidden; */
           /* 4、padding左右盒子的宽度 */
+          /* 控制的是中间盒子宽度，其他两个已经定了 */
     			padding: 0 100px;
     		}
         .middle {
