@@ -18,38 +18,51 @@
 // retC.test('good');
 // retC.test('bad');
 
-const promise1 = ()=>Promise.resolve(1)
-const promise2 = ()=> new Promise(resolve=>{
-  setTimeout(() => {
-    resolve(2)
-  }, 2000);
-})
-const promise3 = ()=> new Promise(resolve=>{
-  setTimeout(() => {
-    resolve(3)
-  }, 3000);
-})
+function deepClone(obj) {
+  // 如果是 值类型 或 null，则直接return
+  if(typeof obj !== 'object' || obj === null) {
+      return obj
+  }
+  
+  // 定义结果对象 如果对象是数组，则定义结果数组
+  let copy = Array.isArray(obj) ? [] : {};
+  
+  // 遍历对象的key
+  for(let key in obj) {
+      // 如果key是对象的自有属性
+      if(obj.hasOwnProperty(key)) {
+          // 递归调用深拷贝方法
+          copy[key] = deepClone(obj[key])
+          // typeof copy[key] === "object" ? deepCopy(copy[key]) : copy[key];
+      }
+  }
+  
+  return copy
+} 
 
-const promiseList = [promise1,promise2,promise3]
-
-function promiseChain(tasks) {
-  let promise = Promise.resolve()
-
-  tasks.forEach(task => {
-      promise = promise
-                  .then(task)
-                  .then(res => {
-                    console.log(res);
-                  })
-    })
-    return promise
+a = {
+  a: 'a',
+  b(){
+    console.log(this.a);
+    console.log(a);
+  }
 }
 
-promiseChain(promiseList) .then(() => console.log('finished'))
+Promise.resolve().then(()=>{
+  console.log(0);
+  return Promise.resolve(4)
+}).then((res)=>{
+  console.log(res);
+})
 
-function promiseChain2(tasks) {
-  return tasks.reduce((pre, cur)=> {
-    return pre.then(cur)
-      .then(res => console.log(res))
-  }, Promise.resolve())
-}
+Promise.resolve().then(()=>{
+  console.log(1);
+}).then(()=>{
+  console.log(2);
+}).then(()=>{
+  console.log(3);
+}).then(()=>{
+  console.log(5);
+}).then(()=>{
+  console.log(6);
+})
