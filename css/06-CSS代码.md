@@ -390,9 +390,12 @@ https://blog.csdn.net/zhoulei1995/article/details/80161240 CSS 负边距
 ![](image/2021-06-27-15-46-10.png)
 
 ### 3. 水平垂直居中布局
-行内元素水平垂直居中常用方法有两种：
+行内元素(如`span`)水平垂直居中常用方法有两种：
 * 水平居中: text-align: center
 * 垂直居中：Height=line-height（适合纯文字类）
+  >也是父元素中， 如：
+  height： 300px;
+  line-height: 300px;
 
 块级元素居中分为：
 * 居中元素宽高固定
@@ -401,7 +404,7 @@ https://blog.csdn.net/zhoulei1995/article/details/80161240 CSS 负边距
 #### 3.1 水平居中的实现方案
 - 利用块级元素撑满父元素的特点，如果宽度已定，左右margin auto（`margin:0 auto`）就可以平分剩余空间
   >`margin: auto`对水平居中有效，垂直无效
-- 利用行内块居中： 把父级元素设置为`text-align=center`，之后子元素的`display`设置为`inline-block`
+- 利用行内块居中： 把父级元素设置为`text-align=center`，之后子元素的`display`设置为`inline-block`(或者是文字本身也可以)
   >注意是父元素设置`text-align=center`，而子元素为内联（p或者a标签之类的）或者`inline-block`
 - 绝对定位：`postion ：absolute`，之后`left 50%`
 - flex: 父元素`display:flex; justify-content：center;`
@@ -442,9 +445,14 @@ child{
 #### 3.3 水平垂直居中的实现方案
 ##### 3.3.1 固定宽高
 ###### 3.3.1.1 margin
+
+注意，会发生父子margin重叠
+
+父元素要设置overflow: hidden;
+
 ``` css {.line-numbers}
 .son {
-  /*水平居中*/
+  /*水平居中 这行要先写不谈会覆盖下面的语句*/
   margin: 0 auto;
   /*垂直居中 (父元素高-子元素高)/2*/
   margin-top:100px;
@@ -476,6 +484,8 @@ child{
  }
  .son {
      position: absolute; 
+     /* 这样设置才能自动添加margin 撑开 */
+     /* 不然right和bottom都不起作用 */
      margin: auto; 
      /*水平居中*/
      left: 0;
@@ -520,7 +530,10 @@ child{
 ```
 
 ###### 3.3.2.3 flex
-使用flex布局，通过align-items:center和justify-content:center设置容器的垂直和水平方向上为居中对齐，然后它的子元素也可以实现垂直和水平的居中。该方法要考虑兼容的问题，该方法在移动端用的较多：
+使用flex布局，通过align-items:center和justify-content:center设置容器的垂直和水平方向上为居中对齐，然后它的子元素也可以实现垂直和水平的居中。该方法要考虑兼容的问题，该方法在移动端用的较多
+
+注意这些属性是设置在容器上的
+
 ``` css {.line-numbers}
 /* 水平居中 */
 .father {

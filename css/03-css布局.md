@@ -274,11 +274,17 @@ BFC（Block Formatting Context）块级格式化上下文，是 Web 页面中盒
 * 底部元素设置浮动：float
 * 底部元素的position的值为absolute/fixed
 
-（2）父子之间重叠I（？）
+（2）**父子之间重叠**
 * 父元素加入：overflow: hidden
 * 父元素添加透明边框：border:1px solid transparent
 * 子元素变为行内盒子：display: inline-block
 * 子元素加入浮动属性或定位
+
+---
+有时当我们设置子元素的margin-top，但是却发现子元素没有出现上外边距的效果，反而是父元素出现了上外边距的效果。
+
+原因：
+边距重叠：一个盒子和其子孙的边距重叠。根据规范，一个盒子如果没有上补白和上边框，那么**它的上边距应该和其文档流中的第一个孩子元素的上边距重叠**。
 
 ### 9. 浮动
 

@@ -485,6 +485,32 @@ session是服务器为了保存用户状态而创建的一个特殊的对象
     在浏览器第一次访问服务器时,服务器会创建一个session对象,该对象有一个唯一的id,即sessionid,服务器会把sessionid以cookie的形式发送给浏览器,当浏览器再次访问服务器时,会携带cookie在请求头,可以通过cookie中的sessionid来访问session对象
     可以实现在http无状态基础上实现用户状态管理(即**两个页面之间的用户状态**,我可以保存在session中)
 
+**什么情况下会带上cookie**
+
+Set-Cookie响应头字段（Response header）是服务器发送到浏览器或者其他客户端的一些信息，一般用于登陆成功的情况下返回给客户端的凭证信息，然后下次请求时会带上这个cookie，这样服务器端就能知道是来自哪个用户的请求了。
+
+Cookie请求头字段是客户端发送请求到服务器端时发送的信息（满足一定条件下浏览器自动完成，无需前端代码辅助）。
+
+下表为Set-Cookie响应头可以设置的属性
+
+![](image/2021-08-05-19-05-42.png)
+
+请看上面标红的三个属性，拿一个Http POST请求来说  http://aaa.www.com/xxxxx/list
+
+如果满足下面几个条件：
+
+1. 浏览器端某个Cookie的domain字段等于 aaa.www.com 或者 www.com(包括子域名)
+
+2. 都是http或者https，或者不同的情况下Secure属性为false
+
+3. 要发送请求的路径，即上面的xxxxx跟浏览器端Cookie的path属性必须一致，或者是浏览器端Cookie的path的子目录，比如浏览器端Cookie的path为/test，那么xxxxxxx必须为/test或者/test/xxxx等子目录才可以
+
+
+注：
+上面3个条件**必须同时满足**，否则该Post请求就不能自动带上浏览器端已存在的Cookie
+
+>https://blog.csdn.net/john1337/article/details/104571244
+
 ###### 7.5.2.2 LocalStorage
 LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息较大，Cookie就不能满足我们的需求，这时候LocalStorage就派上用场了。
 

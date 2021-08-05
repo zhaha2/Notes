@@ -1334,6 +1334,69 @@ async function promiseChain3(tasks) {
 }
 ```
 
+#### lazy man
+用Promise写个Lazyman函数，返回的对象提供eat和sleep两个函数，支持链式调用
+
+```js
+var lazyman = new LazyMan('jack')
+lazyman.sleep(2).eat('meat').sleep(1).eat('apple').sleepAtFirst(1).eat('food')
+
+// 3s 后
+// I'm Jack、eat meat
+// 1s 后
+// eat apple、eat food
+```
+
+自己的 
+```js
+function LazyMan(name) {
+  this.promiseLazyMan = new Promise(resolve => {
+    //因为需要在所有的then在同步代码中绑定好之后才能开始执行,
+    // 所以放在setTimeOut里
+    setTimeout(() => {
+      this.atFirst = this.atFirst ? this.atFirst : 0;
+      console.log(`I'm ${name}`);
+      resolve()
+    }, this.atFirst * 1000);
+  })
+}
+
+LazyMan.prototype.eat = function(food) {
+  this.promiseLazyMan = this.promiseLazyMan.then(() => {
+    console.log(`eat ${food}`);
+  })
+
+  // 链式调用
+  return this
+}
+
+LazyMan.prototype.sleep = function(time) {
+  this.promiseLazyMan = this.promiseLazyMan.then(() => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        console.log(`I slept ${time}`);
+        resolve()
+      }, time*1000);
+    })
+  })
+
+  // 链式调用
+  return this
+}
+
+// 这里不对
+LazyMan.prototype.sleepAtFirst = function (time) { 
+  this.atFirst = time;
+  console.log('I sleep at first');
+  return this;
+}
+
+var lazyman = new LazyMan('jack')
+lazyman.sleep(2).eat('meat').sleep(3).eat('apple').sleepAtFirst(70).eat('food')
+```
+
+>稍后 https://wtaufpziv.github.io/2020/04/09/lazyman%E7%9A%84promise%E5%AE%9E%E7%8E%B0/
+
 ### 设计模式
 
 > [「中高级前端面试」手写代码合集(二)](https://juejin.cn/post/6904079136299024398/#heading-1)

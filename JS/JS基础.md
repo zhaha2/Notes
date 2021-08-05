@@ -541,7 +541,38 @@ xhr.send(null);
 
 注意，AJAX 只能向同源网址（协议、域名、端口都相同）发出 HTTP 请求，如果发出跨域请求，就会报错。
 
+
+#### ajax中post提交对象问题
+
+send方法的参数就是发送的数据。多种格式的数据，都可以作为它的参数。
+
+```js
+void send();
+void send(ArrayBufferView data);
+void send(Blob data);
+void send(Document data);
+void send(String data);
+void send(FormData data);
+```
+如果send()发送 DOM 对象，在发送之前，数据会先被串行化。如果发送二进制数据，最好是发送ArrayBufferView或Blob对象，这使得通过 Ajax 上传文件成为可能。
+
+>https://wangdoc.com/javascript/bom/xmlhttprequest.html#xmlhttprequestopen
+
 ---
+json格式发送对象
+
+axios默认的contentType是application/json
+
+```js
+data = (method != 'GET' && typeof data=='object')?JSON.stringify(data):null;
+
+xhr.setRequestHeader("Content-type", "application/json");
+
+xhr.send(data);
+```
+
+#### XMLHttpRequest.readyState
+
 `XMLHttpRequest.readyState`返回一个整数，表示实例对象的当前状态。该属性只读。它可能返回以下值。
 
 - 0，表示 XMLHttpRequest 实例已经生成，但是实例的`open()`方法还没有被调用。
@@ -739,6 +770,7 @@ removeEventListener() ---删除事件侦听器
 - addEventListener()中的this，是绑定事件的对象。
 
 - `addEventListener()`不支持 IE8 及以下的浏览器。在IE8中可以使用`attachEvent`来绑定事件。
+-  普通方式绑定事件后，不可以取消。`addEventListener`绑定后则可以用 `removeEvenListener` 取消。
 
 #### 事件对象
 
