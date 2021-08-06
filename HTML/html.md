@@ -8,29 +8,44 @@
   - [3.1 语义化好处](#31-语义化好处)
   - [3.2 注意语义化编写](#32-注意语义化编写)
   - [3.3 常见的语义化标签](#33-常见的语义化标签)
-- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype文档类型-的作用)
+- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype档类型-的作)
   - [4.1 为什么HTML5只需要写`<!DOCTYPE HTML>`](#41-为什么html5只需要写doctype-html)
 - [5. script标签中defer和async的区别](#5-script标签中defer和async的区别)
+  - [load 与 DOMContentLoaded 的区别](#load-与-domcontentloaded-的区别)
 - [6. head标签](#6-head标签)
 - [6. meta标签](#6-meta标签)
 - [7. HTML5有哪些更新](#7-html5有哪些更新)
   - [7.1 语义化标签](#71-语义化标签)
+    - [7.1.1 title与h1的区别、b与strong的区别、i与em的区别](#711-title与h1的区别b与strong的区别i与em的区别)
   - [7.2 媒体标签](#72-媒体标签)
   - [7.3 表单](#73-表单)
-  - [7.4 进度条、度量器](#74-进度条-度量器)
+    - [7.3.1 H5中新增的语义标签](#731-h5中新增的语义标签)
+    - [7.3.2 表单属性](#732-表单属性)
+    - [7.3.3 表单事件](#733-表单事件)
+  - [7.4 进度条、度量器](#74-进度条度量器)
   - [7.5 Web存储](#75-web存储)
+    - [7.5.1 如何设置localStorage的存储时间](#751-如何设置localstorage的存储时间)
+    - [7.5.2 浏览器本地存储方式及使用场景](#752-浏览器本地存储方式及使用场景)
+      - [7.5.2.1 Cookie](#7521-cookie)
+      - [7.5.2.2 LocalStorage](#7522-localstorage)
+      - [7.5.2.3 SessionStorage](#7523-sessionstorage)
   - [7.6 DOM操作](#76-dom操作)
+    - [7.6.1 获取元素](#761-获取元素)
+    - [7.6.2 类名操作](#762-类名操作)
+    - [7.6.3 自定义属性](#763-自定义属性)
   - [7.7 Drag API](#77-drag-api)
   - [7.8 web worker](#78-web-worker)
   - [7.9 drag API](#79-drag-api)
   - [7.10 其他](#710-其他)
   - [7.11 总结](#711-总结)
 - [8. HTML5的离线储存](#8-html5的离线储存)
+  - [8.1 浏览器是如何对 HTML5 的离线储存资源进行管理和加载的](#81-浏览器是如何对-html5-的离线储存资源进行管理和加载的)
 - [9. img的srcset属性](#9-img的srcset属性)
 - [10. label](#10-label)
 - [11. 浏览器乱码的原因是什么？如何解决](#11-浏览器乱码的原因是什么如何解决)
 - [12. `<img>` 的 title 和 alt 属性的区别](#12-img-的-title-和-alt-属性的区别)
 - [13. 懒加载](#13-懒加载)
+- [input标签的属性](#input标签的属性)
 - [页面加载缓慢 优化](#页面加载缓慢-优化)
   - [前端有哪些页面优化方法](#前端有哪些页面优化方法)
   - [前端需要注意哪些SEO](#前端需要注意哪些seo)
@@ -146,7 +161,26 @@ HTML5不基于SGML(标准通用标记语言)，因此不需要对DTD进行引用
 
 defer 和 async属性都是去异步加载外部的JS脚本文件，它们都不会阻塞页面的解析，其区别如下：
 - 执行顺序：多个带async属性的标签，不能保证加载的顺序(谁先下载完了谁加载)；多个带defer属性的标签，按照加载顺序执行(都在最后执行)；
-- 脚本是否并行执行：async属性，表示后续文档的加载和执行与js脚本的加载和执行是并行进行的，即异步执行；defer属性，加载后续文档的过程和js脚本的加载(此时仅加载不执行)是并行进行的(异步)，js脚本需要等到文档所有元素解析完成之后才执行，DOMContentLoaded事件触发执行之前。
+- 脚本是否并行执行：async属性，表示后续文档的加载和执行与js脚本的加载和执行是并行进行的，即异步执行；defer属性，加载后续文档的过程和js脚本的加载(此时仅加载不执行)是并行进行的(异步)，js脚本需要等到文档所有元素解析完成之后才执行，**DOMContentLoaded事件触发执行之前**。
+
+---
+- 都在页面 onload 之前执行
+- 有 defer 属性的脚本会阻止 DOMContentLoaded 事件，直到脚本被加载并且解析完成。
+
+- async 属性的脚本无法确定是在 DOMContentLoaded 事件触发之前或之后执行。defer 属性的脚本在 DOMContentLoaded 事件触发之前执行。async 属性的脚本并不一定会按照顺序执行（先加载完成先执行），defer 属性的脚本会按照顺序执行。
+
+#### load 与 DOMContentLoaded 的区别
+load :
+当**整个页面及所有依赖资源如样式表和图片都已完成加载时**，将触发load事件。
+它与DOMContentLoaded不同，后者只要页面DOM加载完成就触发，无需等待依赖资源的加载。
+
+DOMContentLoaded :
+当**初始的 HTML 文档被完全加载和解析完成之后**，DOMContentLoaded 事件被触发，而无需等待样式表、图像和子框架的完全加载。另一个不同的事件 load 应该仅用于检测一个完全加载的页面。
+
+>**注意**： DOMContentLoaded 事件必须等待其所属 script 之前的样式表加载解析完成才会触发。
+
+>作者：听见下雨声
+链接：https://juejin.cn/post/6869314860245745678
 
 ### 6. head标签
 `<head>` 标签用于定义文档的头部，它是所有头部元素的容器。`<head>` 中的元素可以引用脚本、指示浏览器在哪里找到样式表、提供元信息等。
@@ -511,6 +545,53 @@ Cookie请求头字段是客户端发送请求到服务器端时发送的信息�
 
 >https://blog.csdn.net/john1337/article/details/104571244
 
+---
+![](image/2021-08-06-14-04-26.png)
+![](image/2021-08-06-14-04-38.png)
+
+**注意**
+- 如果不设过期时间，这个cookie称为 Session Cookie ，存在内存（进程）中，将会一直存在直到**关闭浏览器（或关闭页面）**，关闭浏览器进程结束就不存在了.（在不设置过期时间的情况下，这个是默认值）
+session在客户端是靠cookie维持的。
+
+- 关于domian前面带不带`.`
+  前导点表示Cookie也对子域有效；但是，最近的HTTP规范（RFC 6265）更改了此规则，因此**现代浏览器不应在意前导点**。实施不推荐使用的RFC 2109的旧浏览器可能需要该点。
+
+- 服务器 a.b.com 只能设置domain为 a.b.com 或者 b.com
+
+**设置cookie**
+
+通过JS设置
+```js
+// 一次只能设置一对键值，但不像传统的JS一般，不会覆盖（设置这个属性可以增加条目而不是覆盖）
+document.cookie = 'name=xxx;';
+
+// 也可以一次性设置许多值
+ document.cookie=" name=value ; expire=GMT_String ; path=cookieDir ; domain=cookieDomain "
+```
+
+e.g.
+```js
+var username="小明";
+var password="123456";
+var expire=(new Date()).getTime()+1000*3600*24*30;
+
+// 对 cookie 的值进行 escape() 编码：
+document.cookie = " username=" + escape(username) + " expire=" + expire + " ; path=/ ; domain=.itxueyuan.org ";
+document.cookie = " password=" + escape(password) + " expire=" + expire + " ; path=/ ; domain=.itxueyuan.org ";
+```
+
+服务端设置（node）
+```js
+res.setHeader('Set-Cookie', 'name=xxx;');
+```
+
+修改cookie
+```js
+// 修改 cookie 直接覆盖就行
+document.cookie = 'name=xxx;';
+```
+
+
 ###### 7.5.2.2 LocalStorage
 LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息较大，Cookie就不能满足我们的需求，这时候LocalStorage就派上用场了。
 
@@ -522,11 +603,15 @@ LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息
 **LocalStorage的缺点**：
 - 存在浏览器兼容问题，IE8以下版本的浏览器不支持
 - 如果浏览器设置为隐私模式，那我们将无法读取到LocalStorage
-- LocalStorage受到同源策略的限制，即端口、协议、主机地址有任何一个不相同，都不会访问
+- LocalStorage受到**同源策略**的限制，即端口、协议、主机地址有任何一个不相同，都不会访问
+  >?应该和cookie的domain属性不同，LocalStorage中子域名也不可以访问。要想访问要跨域（postMessage）
+  
+>  稍后 [localstorage的跨域存储方案](https://www.jianshu.com/p/e86d92aeae69)
 
 **LocalStorage的使用场景**：
 - 有些网站有换肤的功能，这时候就可以将换肤的信息存储在本地的LocalStorage中，当需要换肤的时候，直接操作LocalStorage即可
 - 在网站中的用户浏览信息也会存储在LocalStorage中，还有网站的一些不常变动的个人信息等也可以存储在本地的LocalStorage中
+- 购物车？
 - 鉴权的token也可以存在localStorage中
 
 ###### 7.5.2.3 SessionStorage
@@ -535,6 +620,7 @@ SessionStorage和LocalStorage都是在HTML5才提出来的存储方案，Session
 **SessionStorage与LocalStorage对比**：
 - SessionStorage和LocalStorage都在本地进行数据存储；
 - SessionStorage也有同源策略的限制，但是SessionStorage有一条更加严格的限制，SessionStorage只有在同一浏览器的同一窗口下才能够共享；
+  >同一浏览器的相同域名和端口的不同页面间可以共享相同的 localStorage，但是**不同页面间无法共享sessionStorage**的信息。
 - LocalStorage和SessionStorage都不能被爬虫爬取；
 
 ---
@@ -894,6 +980,9 @@ title属性可以为链接添加描述性文字，来更加清楚的表达链接
 >https://zhuanlan.zhihu.com/p/25455672 图片懒加载的三种方式
 https://segmentfault.com/a/1190000017795499
 https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/img#attr-loading 用loading: lazy属性
+
+### input标签的属性
+https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/Input
 
 ### 页面加载缓慢 优化
 懒加载 压缩文件 cdn 服务端渲染（SSR）
