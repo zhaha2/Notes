@@ -8,7 +8,7 @@
   - [3.1 语义化好处](#31-语义化好处)
   - [3.2 注意语义化编写](#32-注意语义化编写)
   - [3.3 常见的语义化标签](#33-常见的语义化标签)
-- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype档类型-的作)
+- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype文档类型-的作用)
   - [4.1 为什么HTML5只需要写`<!DOCTYPE HTML>`](#41-为什么html5只需要写doctype-html)
 - [5. script标签中defer和async的区别](#5-script标签中defer和async的区别)
   - [load 与 DOMContentLoaded 的区别](#load-与-domcontentloaded-的区别)
@@ -16,30 +16,17 @@
 - [6. meta标签](#6-meta标签)
 - [7. HTML5有哪些更新](#7-html5有哪些更新)
   - [7.1 语义化标签](#71-语义化标签)
-    - [7.1.1 title与h1的区别、b与strong的区别、i与em的区别](#711-title与h1的区别b与strong的区别i与em的区别)
   - [7.2 媒体标签](#72-媒体标签)
   - [7.3 表单](#73-表单)
-    - [7.3.1 H5中新增的语义标签](#731-h5中新增的语义标签)
-    - [7.3.2 表单属性](#732-表单属性)
-    - [7.3.3 表单事件](#733-表单事件)
-  - [7.4 进度条、度量器](#74-进度条度量器)
+  - [7.4 进度条、度量器](#74-进度条-度量器)
   - [7.5 Web存储](#75-web存储)
-    - [7.5.1 如何设置localStorage的存储时间](#751-如何设置localstorage的存储时间)
-    - [7.5.2 浏览器本地存储方式及使用场景](#752-浏览器本地存储方式及使用场景)
-      - [7.5.2.1 Cookie](#7521-cookie)
-      - [7.5.2.2 LocalStorage](#7522-localstorage)
-      - [7.5.2.3 SessionStorage](#7523-sessionstorage)
   - [7.6 DOM操作](#76-dom操作)
-    - [7.6.1 获取元素](#761-获取元素)
-    - [7.6.2 类名操作](#762-类名操作)
-    - [7.6.3 自定义属性](#763-自定义属性)
   - [7.7 Drag API](#77-drag-api)
   - [7.8 web worker](#78-web-worker)
   - [7.9 drag API](#79-drag-api)
   - [7.10 其他](#710-其他)
   - [7.11 总结](#711-总结)
 - [8. HTML5的离线储存](#8-html5的离线储存)
-  - [8.1 浏览器是如何对 HTML5 的离线储存资源进行管理和加载的](#81-浏览器是如何对-html5-的离线储存资源进行管理和加载的)
 - [9. img的srcset属性](#9-img的srcset属性)
 - [10. label](#10-label)
 - [11. 浏览器乱码的原因是什么？如何解决](#11-浏览器乱码的原因是什么如何解决)
@@ -575,9 +562,9 @@ var username="小明";
 var password="123456";
 var expire=(new Date()).getTime()+1000*3600*24*30;
 
-// 对 cookie 的值进行 escape() 编码：
-document.cookie = " username=" + escape(username) + " expire=" + expire + " ; path=/ ; domain=.itxueyuan.org ";
-document.cookie = " password=" + escape(password) + " expire=" + expire + " ; path=/ ; domain=.itxueyuan.org ";
+// 对 cookie 的值进行编码：
+document.cookie = " username=" + encodeURIComponent(username) + " expire=" + expire + " ; path=/ ; domain=.itxueyuan.org ";
+document.cookie = " password=" + encodeURIComponent(password) + " expire=" + expire + " ; path=/ ; domain=.itxueyuan.org ";
 ```
 
 服务端设置（node）

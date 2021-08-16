@@ -22,9 +22,6 @@ https://www.yuque.com/cuggz/interview/hswu8g#8d6cd1d13b8d85c0090dd20084f39044
 [Vue2.0 v-for 中 :key 到底有什么用？](https://www.zhihu.com/question/61064119)
 
 ---
-nextTick 可以让我们在下次 DOM 更新循环结束之后执行延迟回调，用于获得更新后的 DOM。
-[你真的理解$nextTick么](https://juejin.cn/post/6844903843197616136#heading-6)
-[Vue nextTick 机制](https://juejin.cn/post/6844903599655370765#heading-1)
 
 [Vue3.0 新特性以及使用经验总结](https://juejin.cn/post/6940454764421316644#heading-15)
 
@@ -35,9 +32,9 @@ nextTick 可以让我们在下次 DOM 更新循环结束之后执行延迟回调
 
 数据驱动、组件化
 
-### 双向绑定
+### 双向绑定（响应式）
 
-#### 说一下Vue的工作原理（响应式原理）
+#### Vue的工作原理（响应式原理）
 
 Vue响应式底层实现方法是 Object.defineProperty() 方法，该方法中存在一个getter和setter的可选项，可以对属性值的获取和设置造成影响
 
@@ -57,6 +54,28 @@ https://www.jianshu.com/p/860418f0785c
 
 #### 依赖收集
 
+Dep(依赖)就是帮我们收集**究竟要通知到哪里的**。 虽然data中有text和message属性，但是只有message被渲染到页面上，至于text无论怎么变化都影响不到视图的展示，因此我们**仅仅对message进行收集即可**，可以避免一些无用的工作。
+那这个时候message的Dep就收集到了一个依赖，这个依赖就是用来管理data中message变化的。
+
+- 当使用watch属性时，也就是开发者自定义的监听某个data中属性的变化。比如监听message的变化，message变化时我们就要通知到watch这个钩子，让它去执行回调函数。
+这个时候message的Dep就收集到了两个依赖，第二个依赖就是用来管理watch中message变化的。
+
+- 当开发者自定义computed计算属性时，如下messageT属性，是依赖message的变化的。因此message变化时我们也要通知到computed，让它去执行回调函数。
+  
+这个时候message的Dep就收集到了三个依赖，这个依赖就是用来管理computed中message变化的。
+
+图示如下：一个属性可能有多个依赖，每个响应式数据都有一个Dep来管理它的依赖。
+
+![](image/2021-08-16-11-47-06.png)
+
+回顾一下，Vue响应式原理的核心就是Observer、Dep、Watcher。
+
+- Observer中进行响应式的绑定，在数据被读的时候，触发get方法，执行Dep来收集依赖，也就是收集Watcher。
+- 在数据被改的时候，触发set方法，通过对应的所有依赖(Watcher)，去执行更新。比如watch和computed就执行开发者自定义的回调方法。
+
+>[Vue响应式原理-理解Observer、Dep、Watcher](https://juejin.cn/post/6844903858850758670)
+
+---
 Vue是一个实现数据驱动视图的框架~~ 我们都知道，Vue能够实现当一个数据变更时，视图就进行刷新，而且用到这个数据的其他地方也会同步变更；而且，这个数据必须是在有被依赖的情况下，视图和其他用到数据的地方才会变更。 所以，Vue要能够知道一个数据是否被使用，实现这种机制的技术叫做依赖收集根据Vue官方文档的介绍，其原理如下图所示：
 
 ![](image/2021-08-01-11-10-16.png)
@@ -132,6 +151,66 @@ new Watcher(this, function name() {
 >看 https://ustbhuangyi.github.io/vue-analysis/v2/reactive/getters.html#%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90 源码
 >看 https://github.com/AnnVoV/blog/issues/7 源码 很详细
 
+#### 如何监听Array的变化
+
+`Object.defineProperty`对数组进行响应式化是有缺陷的。
+
+虽然我们可以监听到索引的改变(Vue只是没有使用这个方式去监听数组索引的变化，因为尤大认为**性能消耗太大**，于是在性能和用户体验之间做了取舍)。。但是`defineProperty`不能检测到数组长度的变化，准确的说是**通过改变length而增加的长度不能监测到**。这种情况无法触发任何改变。
+
+**而且监听数组所有索引的的代价也比较高**，综合一些其他因素，Vue用了另一个方案来处理。
+
+observe方法中，如果发现是数组，则调用`observeArray`方法处理。
+
+在Vue初始化的过程中，给data中的每个数据都挂载了当前的Observer实例，又在这个实例上挂载了dep。这样就能保证我们在数组拦截器中访问到dep了
+
+---
+Vue在array.js中更准确的表达是拦截了数组的原型,重写了methodsToPatch中七个方法，并将重写后的原型暴露出去。
+
+![](image/![](image/2021-08-16-12-01-13.png).png)
+
+```js
+const arrayProto = Array.prototype // 获取Array的原型
+
+function def (obj, key) {
+    Object.defineProperty(obj, key, {
+        enumerable: true,
+        configurable: true,
+        value: function(...args) {
+            console.log(key); // 控制台输出 push
+            console.log(args); // 控制台输出 [Array(2), 7, "hello!"]
+            
+            // 获取原生的方法
+            let original = arrayProto[key];
+            // 将开发者的参数传给原生的方法，保证数组按照开发者的想法被改变
+            const result = original.apply(this, args);
+
+            // do something 比如通知Vue视图进行更新
+            console.log('我的数据被改变了，视图该更新啦');
+            this.text = 'hello Vue';
+            return result;
+        }
+    });
+}
+
+// 新的原型
+let obj = {
+    push() {}
+}
+
+// 重写赋值
+def(obj, 'push');
+
+let arr = [0];
+
+// 原型的指向重写
+arr.__proto__ = obj;
+
+// 执行push
+arr.push([1, 2], 7, 'hello!');
+console.log(arr);
+```
+
+
 ### 渲染 虚拟DOM
 
 ![](image/2021-08-01-14-57-38.png)
@@ -185,6 +264,8 @@ new Watcher(this, function name() {
 ??采用先序深度优先遍历的算法
 
 只有当新旧子节点的类型都是多个子节点时，核心 Diff 算法才派得上用场
+
+Vue 2.X进行diff时，调用patch打补丁函数，**一边比较一边给真实的DOM打补丁**
 
 >作者：洛霞
 链接：https://www.nowcoder.com/discuss/459995?channel=-1&source_id=profile_follow_post_nctrack
@@ -242,6 +323,82 @@ Diff 过程的几种比较方法中，最好的是首首/尾尾/首尾/尾首比
 index 永远都是连续的，比如删除一个元素，他后面的所有index都会改变。而key应该是一个独一无二的值，**index改变了他的key也改变了**，Vue就会错误的复用这些元素。
 
 >看 [轻松理解为什么不用Index作为key](https://juejin.cn/post/6844904133430870024)
+
+---
+新旧 children 中的节点只有顺序是不同的时候，最佳的操作应该是通过移动元素的位置来达到更新的目的，key是children中节点的唯一标识，以便能够在旧 children 的节点中找到可复用的节点。
+
+#### 异步更新与nextTick
+
+nextTick 可以让我们在下次 DOM 更新循环结束之后执行延迟回调，用于获得更新后的 DOM。在修改数据之后立即使用这个方法，获取更新后的 DOM。
+
+只要观察到数据变化，Vue 将开启一个队列，并缓冲在同一事件循环中发生的所有数据改变。如果同一个 watcher 被多次触发，只会被推入到队列中一次。这种在缓冲时去除重复数据对于避免不必要的计算和 DOM 操作上非常重要。
+然后，在下一个的事件循环“tick”中，Vue 刷新队列并执行实际 (已去重的) 工作。Vue 在内部尝试对异步队列使用原生的 Promise.then 和 MessageChannel，如果执行环境不支持，会采用 setTimeout(fn, 0) 代替。
+
+```js
+
+// watcher.js
+update () {
+    if (this.lazy) {
+        // 如果是计算属性
+        this.dirty = true
+    } else if (this.sync) {
+        // 如果要同步更新
+        this.run()
+    } else {
+        // 进入更新队列
+        queueWatcher(this)
+    }
+}
+```
+
+e.g.
+```js
+export default {
+  data () {
+    return {
+      msg: 0
+    }
+  },
+  mounted () {
+    this.msg = 1
+    this.msg = 2
+    this.msg = 3
+  },
+  watch: {
+    msg () {
+      console.log(this.msg)
+    }
+  }
+}
+
+// 只会输出一次：3
+```
+
+---
+实际上nextTick就是一个异步方法，也许和你使用的setTimeout没有太大的区别。
+
+总结就是Promise > MutationObserver > setImmediate > setTimeout。
+
+再总结一下优先级：**microtask (jobs) 优先**。
+
+因为在执行微任务之后还会执行渲染操作
+
+如果task队列如果有大量的任务等待执行时，将dom的变动作为microtasks而不是宏任务（task）能**更快的将变化呈现给用户**。
+如果task里排队的队列比较多，同时遇到多次的微任务队列执行完。nextTick作为宏任务插入，很有可能之前触发多次浏览器渲染，但是依旧没有执行我们真正的修改dom任务
+
+- 在一轮event loop中多次修改同一dom，只有最后一次会进行绘制。
+- 渲染更新（Update the rendering）会在event loop中的tasks和microtasks完成后进行，但并不是每轮event loop都会更新渲染，这取决于是否修改了dom和浏览器觉得是否有必要在此时立即将新状态呈现给用户。如果在一帧的时间内（时间并不确定，因为浏览器每秒的帧数总在波动，16.7ms只是估算并不准确）修改了多处dom，浏览器可能将变动积攒起来，只进行一次绘制，这是合理的。
+- 如果希望在每轮event loop都即时呈现变动，可以使用requestAnimationFrame。
+
+>作者：青舟同学
+链接：https://juejin.cn/post/6844903918472790023
+
+---
+nextTick为什么总能拿到最新的DOM
+
+因为调用顺序不同！Vue文档中说明，在修改响应式数据后调用nextTick，可获取更新后的DOM。注意了！有顺序要求！
+
+[Vue nextTick 机制](https://juejin.cn/post/6844903599655370765#heading-1)
 
 ### 生命周期
 
@@ -417,6 +574,16 @@ router为VueRouter实例，想要导航到不同URL，则使用router.push方法
 
 #### 路由守卫
 
+路由钩子函数有三种：
+1：全局钩子： beforeEach、 afterEach、beforeResolve
+2：单个路由里面的钩子：  beforeEnter
+3:组件路由：beforeRouteEnter、 beforeRouteUpdate、 beforeRouteLeave
+
+#### vue匹配不到路由跳转登录页或其他页面
+
+两种方法
+https://www.cxyzjd.com/article/woshidamimi0/84837727
+
 ### v-if v-show
 
 #### v-if 原理
@@ -426,6 +593,20 @@ router为VueRouter实例，想要导航到不同URL，则使用router.push方法
 ![](image/2021-07-31-13-40-17.png)
 
 >https://segmentfault.com/a/1190000039005215
+
+#### 区别
+
+编译的区别
+- v-show其实就是在控制css
+- v-if切换有一个局部编译/卸载的过程，切换过程中合适地销毁和重建内部的事件监听和子组件
+  
+编译的条件
+- v-show都会编译，初始值为false，只是将display设为none，但它也编译了
+- v-if初始值为false，就不会编译了
+  
+本质区别
+- v-show本质就是通过设置css中的display设置为none，控制隐藏
+- v-if是动态的向DOM树内添加或者删除DOM元素
 
 ### computed watch
 

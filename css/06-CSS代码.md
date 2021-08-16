@@ -69,8 +69,9 @@ https://juejin.cn/post/6960844183611375630#heading-26 【CSS】CSS布局解决�
   .right {
     position: absolute;
     top: 0;
-    right: 0;
     bottom: 0;
+    /* 同时设定左右来拉伸宽度 */
+    right: 0;
     left: 200px;
     background: gold;
   }
@@ -122,7 +123,7 @@ https://juejin.cn/post/6960844183611375630#heading-26 【CSS】CSS布局解决�
 
 ### 2. 三栏布局
 #### 2.1 float
-利用浮动，左右两栏设置固定大小，并设置对应方向的浮动。中间一栏设置左右两个方向的margin值，注意这种方式，需要将中间的内容放在html结构的最后,否则右侧会沉在中间内容的下侧
+利用浮动，左右两栏设置固定大小，并设置对应方向的浮动。中间一栏设置左右两个方向的margin值，注意这种方式，**需要将中间的内容放在html结构的最后(浮动的元素在前面)**,否则右侧会沉在中间内容的下侧
 原理: 元素浮动后,脱离文档流,后面的元素受浮动影响,设置受影响元素的margin值即可
 ``` html {.line-numbers}
 <head>
@@ -184,9 +185,10 @@ https://juejin.cn/post/6960844183611375630#heading-26 【CSS】CSS布局解决�
       width: 200px;
       height: 100px;
       background-color: blue;
+      /* 左边也得绝对定位，不然middle会挤到下一行 */
       position: absolute;
-      top: 0;
-      left: 0;
+      /* top: 0;
+      left: 0; */
   }
   .middle {
       margin-left: 200px;
@@ -236,7 +238,7 @@ https://juejin.cn/post/6960844183611375630#heading-26 【CSS】CSS布局解决�
 >https://segmentfault.com/a/1190000003942591 负边距详解
 https://blog.csdn.net/zhoulei1995/article/details/80161240 CSS 负边距
 #### 2.4.1 圣杯布局
-圣杯布局，利用浮动和负边距来实现。父级元素设置左右的 padding，三列均设置向左浮动，中间一列放在最前面，宽度设置为父级元素的宽度，因此后面两列都被挤到了下一行，通过设置 margin 负值将其移动到上一行，再利用相对定位，定位到两边。
+圣杯布局，利用浮动和负边距来实现。父级元素设置左右的 padding，三列均设置向左浮动，**中间一列放在最前面**，**宽度设置为父级元素的宽度**，因此后面两列都被挤到了下一行，通过设置 margin 负值将其移动到上一行，再利用相对定位，定位到两边。
 ``` html {.line-numbers}
 <head>
     <style>
@@ -262,7 +264,7 @@ https://blog.csdn.net/zhoulei1995/article/details/80161240 CSS 负边距
             /* 2、走中间盒子的-100%（因为他在第二个所以走100%） */
             margin-left: -100%;
             /* 5 相对定位,往回走 */
-            position: relative;
+            position: re lative;
             left: -100px;
         }
         .right {
@@ -448,14 +450,26 @@ child{
 
 注意，会发生父子margin重叠
 
-父元素要设置overflow: hidden;
+**父元素要设置overflow: hidden**;
 
 ``` css {.line-numbers}
-.son {
+.outer{
+  width: 500px;
+  height: 300px;
+  background-color: blanchedalmond;
+
+  /* 变成BFC解决margin重叠 */
+  overflow: hidden;
+}
+.inner{
+  background-color: cadetblue;
+  height: 100px;
+  width: 100px;
+
   /*水平居中 这行要先写不谈会覆盖下面的语句*/
   margin: 0 auto;
   /*垂直居中 (父元素高-子元素高)/2*/
-  margin-top:100px;
+  margin-top: 100px;
 }
 ```
 
@@ -487,7 +501,7 @@ child{
      /* 这样设置才能自动添加margin 撑开 */
      /* 不然right和bottom都不起作用 */
      margin: auto; 
-     /*水平居中*/
+     /*水平居中 也得写*/
      left: 0;
      right: 0;
      /*垂直居中*/
@@ -607,14 +621,13 @@ div{
 原理
 ![](image/2021-06-27-18-15-37.png)
 
-#### 4.3 画圆和半圆
+#### 4.3 画圆
 ``` css {.line-numbers}
 div{
-    border: 100px solid transparent;
+    border: 100px solid red;
     width: 0;
     heigt: 0;
-    border-radius: 100px;
-    border-top-color: red;
+    border-radius: 100px; 
 }
 ```
 ##### 4.3.1 画圆
@@ -654,6 +667,50 @@ div {
 }
 ```
 
+##### 同心圆
+1. 渐变
+  ```csss
+    background: repeating-radial-gradient(circle, rgb(255, 255, 255) 5%, rgb(0, 0, 0) 10%);
+  ```
+
+2. 伪元素
+  ```css
+    div::before {
+       content: '';
+       width: 80px;
+       height: 80px;
+       background-color: green;
+       position: absolute;
+       top: 50%;
+       left: 50%;
+       transform: translate(-50%,-50%);
+       border-radius: 50%;
+   }
+
+    div::after {
+       content: '';
+       width: 60px;
+       height: 60px;
+       background-color: blue;
+       position: absolute;
+       top: 50%;
+       left: 50%;
+       transform: translate(-50%,-50%);
+       border-radius: 50%;
+   }
+
+
+    div{
+      position: relative;
+      background-color: yellow;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+    }
+  ```
+
+**关键** 大圆设为`position: relative;`, **::after也相当于他的子元素**，所以设置`position: absolute;`也会相当于大圆定位。
+
 #### 4.4 画宽高自适应的正方形
 - 利用vw来实现：
 ``` css {.line-numbers}
@@ -689,7 +746,7 @@ div {
 
 #### 4.5 画一条0.5px的线
 - 采用transform: scale()的方式，该方法用来定义元素的2D 缩放转换: 
-  ```transform: scale(0.5,0.5);```
+  ```transform: scaleY(0.5);```
 - 采用meta viewport的方式
   ``` <meta name="viewport" content="width=device-width, initial-scale=0.5, minimum-scale=0.5, maximum-scale=0.5"/> ```
 
@@ -768,12 +825,13 @@ div {
   width: 300px;
   height: 300px;
   /* 渐变 */
+  /* 不加to right 默认是从上到下渐变的 */
   background: linear-gradient(to right, red 0%,red 50%,white 50%,white 100%);
   border: 1px solid #ccc;
 }
 ```
 
-#### 
+3. 伪元素
 ```css
 .test {
   width: 100px;
@@ -785,7 +843,8 @@ div {
   content: "";
   /* block似乎也行 */
   display: inline-block;
-  width: 50px;
+  /* width: 50px; */
+  margin-left: 50%;
   height: 100%;
   background-color: blue;
 }
