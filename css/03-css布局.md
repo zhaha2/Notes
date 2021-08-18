@@ -211,6 +211,32 @@ flex属性是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 au
 该属性有两个快捷值：auto (1 1 auto) 和 none (0 0 auto)。
 建议优先使用这个属性，而不是单独写三个分离的属性，因为浏览器会推算相关值。
 
+**注意**
+如果元素上同时设置了width和flex-basis，那么width 的值会被flex-basis覆盖掉。
+
+```html
+<div class="container">
+  <div class="a"></div>
+  <div class="b"></div>
+</div>
+
+.container{
+    display: flex;
+  width: 300px;
+}
+.a{
+    flex: 1;
+  width: 50px;
+}
+.b{
+    flex: 2;
+  width: 50px;
+}
+```
+这里两个容器分别是100px,200px;因为**flex中包含flex-basis，覆盖了width属性。**
+
+如果写作`flex-grow: 1; flex-grow: 2;` 则分别为`50+(300-50-50)/3; 50+2*(300-50-50)/3`
+
 #### 7.2 flex的高度
 Flex 布局会默认：
 - 把所有子项变成水平排列。

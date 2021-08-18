@@ -280,7 +280,7 @@ p.a // 'a' = 2
 ####  Proxy 支持的拦截操作
 一共 13 种。
 
->见 https://es6.ruanyifeng.com/?search=EPSILON&x=4&y=8#docs/proxy
+>见 https://es6.ruanyifeng.com/?search=EPSILON#docs/proxy
 
 ### BigInt
 JS 中的Number类型只能安全地表示-9007199254740991 (-(2^53-1)) 和9007199254740991(2^53-1)之间的整数，任何超出此范围的整数值都可能失去精度。
@@ -400,11 +400,14 @@ Symbol 作为属性名，**遍历对象**的时候，该属性不会出现在for
 
 另一个新的 API，**Reflect.ownKeys()方法**可以返回所有类型的键名，包括常规键名和 Symbol 键名。
 
-由于以 Symbol 值作为键名，不会被常规方法遍历得到。我们可以利用这个特性，为对象定义一些非私有的、但又希望只用于内部的方法。
+由于以 Symbol 值作为键名，不会被常规方法遍历得到。我们可以利用这个特性，**为对象定义一些非私有的、但又希望只用于内部的方法**。
 
 ### 模块
 和commonJS的区别?
 
 ### 其他
+
+ rest 参数 模板字符串
+
 >见 https://www.yuque.com/cuggz/interview/vgbphi#3fb2aa8bcb617ca0de8bfafd7da899e3
 >https://es6.ruanyifeng.com/?search=EPSILON&x=4&y=8

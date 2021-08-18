@@ -201,6 +201,32 @@ Promise.all = function(promises) {
     }
   })
 }
+
+---
+// 我的版本
+Promise.all = function(promises) {
+    // 坑 别忘了返回的是new promise
+    return new Promise((resolve, reject) => {
+        const result = [], 
+        len = promises.length;
+
+        // promises为空直接返回
+        if (!len) {
+            resolve(result);
+            return;
+        }
+
+        for(let p of promises){
+          // 为什么不直接 promise[i].then, 考虑 promise[i] 可能不是一个 promise 对象
+            Promise.resolve(p).then(data => {
+                result.push(data);
+                if(result.length === len) resolve(result);
+            }).catch(err => {
+                reject(err)
+            })
+        }
+    }) 
+}
 ```
 
 #### Promise.race
@@ -216,6 +242,7 @@ Promise.race = function(promises) {
       // promises[i] 可能不是一个 promise 对象
       Promise.resolve(promises[i]).then(data => {
         resolve(data)
+        // 别忘了直接return
         return;
       }).catch(err => {
         reject(err)
@@ -273,7 +300,7 @@ play();
 
 #### 防抖
 
-函数防抖是指在事件被触发 n 秒后再执行回调，如果在这 n 秒内事件又被触发，则重新计时。这可以使用在一些点击请求的事件上，避免因为用户的多次点击向后端发送多次请求。
+函数防抖是指在事件被触发 n 秒后再执行回调，如果在这 n 秒内事件又被触发，则重新计时。
 
 eg. 像仿百度搜索，就应该用防抖，当我连续不断输入时，不会发送请求；当我一段时间内不输入了，才会发送一次请求；如果小于这段时间继续输入的话，时间会重新计算，也不会发送请求。
 
@@ -289,10 +316,18 @@ const debounce = (func, wait = 50) => {
   return function(...args) {
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => {
+      // 别忘了this指向
       func.apply(this, args)
     }, wait)
   }
 }
+
+---
+let debounceAjax = debounce(ajax, 500)
+
+inputb.addEventListener('keyup', function (e) {
+  debounceAjax(e.target.value)
+})
 ```
 
 应用参考 [7分钟理解JS的节流、防抖及使用场景](https://juejin.cn/post/6844903669389885453)
@@ -313,7 +348,8 @@ const throttle = (func, wait = 50) => {
   let lastTime = 0
   return function(...args) {
     // 当前时间
-    let now = +new Date()
+    // let now = +new Date()
+    let now = new Date().getTime()
     // 将当前时间和上一次执行函数时间对比
     // 如果差值大于设置的等待时间就执行函数
     if (now - lastTime > wait) {
@@ -323,6 +359,19 @@ const throttle = (func, wait = 50) => {
   }
 }
 ```
+
+**结合应用场景**
+
+debounce
+
+- search搜索联想，用户在不断输入值时，用防抖来节约请求资源。
+- window触发resize的时候，不断的调整浏览器窗口大小会不断的触发这个事件，用防抖来让其只触发一次
+
+
+throttle
+
+- 鼠标不断点击触发，mousedown(单位时间内只触发一次)
+- 监听滚动事件，比如是否滑到底部自动加载更多，用throttle来判断
 
 #### 类型判断
 
@@ -376,7 +425,7 @@ let multi = curry(multiFn)
 multi(2, 3, 4)
 multi(2)(3)(4)
 multi(2, 3)(4)
-multi(2)(3, 4)   // 以上结果都是 3，柯里化将参数拆开自由绑定，结果不变。
+multi(2)(3, 4)   // 以上结果都是 24，柯里化将参数拆开自由绑定，结果不变。
 let seniorMulti = multi(2) // seniorMulti 可以多次使用
 seniorMulti(3)(4) // 当我们觉得重复传递参数 2 总是冗余时，可以这样。
 ```
@@ -406,6 +455,24 @@ function curry(fn, args = []) {
 }
 ```
 
+我的版本
+```js
+function curry(fn, args = []) {
+  const length = fn.length;
+
+  return function (...newArgs) {
+    const curArgs = [...args, ...newArgs]
+
+    if (curArgs.length === length) {
+      return fn.apply(this, curArgs)
+    } else {
+      // 递归返回科里化的函数，等待参数的传入
+      return curry.call(this, fn, curArgs)
+    }
+  }
+}   
+```
+
 **ES6写法**
 ```js
 const curry = fn =>
@@ -424,9 +491,11 @@ function getJSON(url) {
   let promise = new Promise(function(resolve, reject) {
     let xhr = new XMLHttpRequest();
     // 新建一个 http 请求
+    // async: 布尔值，表示请求是否为异步，默认为true. 不写也行
     xhr.open("GET", url, true);
     // 设置状态的监听函数
     xhr.onreadystatechange = function() {
+      // 记住这些属性的名称
       if (this.readyState !== 4) return;
       // 当请求成功或失败时，改变 promise 的状态
       if (this.status === 200) {
