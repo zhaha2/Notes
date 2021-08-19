@@ -528,6 +528,7 @@ function getJSON(url) {
 const shallowClone = (target) => {
   if (typeof target === 'object' && target !== null) {
     // 根据 target 的类型判断是新建一个数组还是对象
+    // 函数不需要单独处理（没有对象中的那些属性）(是深拷贝)
     const cloneTarget = Array.isArray(target) ? []: {}
     for (let prop in target) {
       if (target.hasOwnProperty(prop)) { // 是否是自身（非继承）属性
@@ -541,6 +542,9 @@ const shallowClone = (target) => {
 }
 
 // 或者你可以
+console.log(Object.assign({}, obj))
+console.log({...obj})
+
 console.log(Object.assign(array, ...sources))
 console.log(array.concat())
 console.log(array.slice())
@@ -548,7 +552,7 @@ console.log([...array])
 ```
 
 **注意**
-浅拷贝，复制来的**基本数据类型**还是真的复制了。改变原值，拷贝来的值不会改变。
+浅拷贝，复制来的**基本数据类型**（第一层）还是真的复制了。改变原值，拷贝来的值不会改变。
 
 ```js
 let obj1 = {a:1,b:{c:1}}
@@ -568,10 +572,10 @@ console.log(obj2); //{a:1,b:{c:2}}
 
 1. JSON.stringify()
 - JSON.parse(JSON.stringify(obj))是目前比较常用的深拷贝方法之一，它的原理就是利用JSON.stringify 将js对象序列化（JSON字符串），再使用JSON.parse来反序列化(还原)js对象。
-- 这个方法可以简单粗暴的实现深拷贝，但是还存在问题，拷贝的对象中如果有函数，undefined，symbol，当使用过JSON.stringify()进行处理之后，都会消失。
+- 这个方法可以简单粗暴的实现深拷贝，但是还存在问题，拷贝的对象中如果有**函数，undefined，symbol**，当使用过JSON.stringify()进行处理之后，都会消失。
 - 他无法实现对函数 、RegExp等特殊对象的克隆
-- 会抛弃对象的constructor,所有的构造函数会指向Object
-- 对象有循环引用,会报错
+- 会**抛弃对象的constructor**,所有的构造函数会指向Object
+- 对象有**循环引用**,会报错
 
 2. 函数库lodash的_.cloneDeep方法
   ```js
@@ -602,6 +606,7 @@ function deepClone(obj) {
         // 如果key是对象的自有属性
         if(obj.hasOwnProperty(key)) {
             // 递归调用深拷贝方法
+            // 数组的键名可以用数字也可以用字符串，这里是字符串
             copy[key] = deepClone(obj[key])
             // typeof copy[key] === "object" ? deepCopy(copy[key]) : copy[key];
         }
@@ -633,11 +638,12 @@ b.a = a
  * @returns
  */
 function deepClone( originObj, map = new WeakMap() ) {
-    if(!originObj || typeof originObj !== 'object') return originObj;  //空或者非对象则返回本身
+    //空或者非对象则返回本身
     // 注意 函数也是直接返回，因为他不可遍历
+    if(!originObj || typeof originObj !== 'object') return originObj;  
  
     //如果这个对象已经被记录则直接返回
-    if( map.get(originObj) ) {
+    if(map.has(originObj)) {
         return  map.get(originObj);
     }
     //这个对象还没有被记录，将其引用记录在map中，进行拷贝    
@@ -645,10 +651,8 @@ function deepClone( originObj, map = new WeakMap() ) {
     map.set(originObj, result); //记录引用关系
     let keys = Object.keys(originObj); //originObj的全部key集合
     //拷贝
-    for(let i =0,len=keys.length; i<len; i++) {
-        let key = keys[i];
-        let temp = originObj[key];
-        result[key] = deepClone(temp, map);
+    for(let key of keys) {
+        result[key] = deepClone(originObj[key], map);
     }
     return result;
   }
@@ -690,9 +694,10 @@ var Foo = (function (){
   }
 })()
 
-// 这里就不能用new了
-a = Foo()
-b = Foo()
+// 也可以用 new，因为构造函数返回对象的话
+// new 返回的就是return后面的对象
+a = new Foo()
+b = new Foo()
 ```
 
 #### 隐式转换
@@ -726,12 +731,13 @@ class Cash {
         this.num = num
     }
     add(c1) {
+         // 对象相加也是先调用valueOf 再toString
         return new Cash(this + c1)
     }
     static add(c1, c2) {
         return new Cash(c1 + c2)
     }
-    // valueOf 用于处理 new Cash(cash1 + cash2)
+    // valueOf 用于处理 cash1 + cash2
     valueOf() {
         return this.num
     }

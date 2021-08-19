@@ -33,7 +33,7 @@
 - [12. `<img>` 的 title 和 alt 属性的区别](#12-img-的-title-和-alt-属性的区别)
 - [13. 懒加载](#13-懒加载)
 - [input标签的属性](#input标签的属性)
-- [页面加载缓慢 优化](#页面加载缓慢-优化)
+- [前端优化](#前端优化)
   - [前端有哪些页面优化方法](#前端有哪些页面优化方法)
   - [前端需要注意哪些SEO](#前端需要注意哪些seo)
 
@@ -971,38 +971,28 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/img#attr-loading 用lo
 ### input标签的属性
 https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/Input
 
-### 页面加载缓慢 优化
-懒加载 压缩文件 cdn 服务端渲染（SSR）
+### 前端优化
 
 #### 前端有哪些页面优化方法
-减少 HTTP请求数
-从设计实现层面简化页面
-合理设置 HTTP缓存
-资源合并与压缩
-合并 CSS图片，减少请求数的又一个好办法。
-将外部脚本置底（将脚本内容在页面信息内容加载后再加载）
-多图片网页使用图片懒加载。
-在js中尽量减少闭包的使用
-尽量合并css和js文件
-尽量使用字体图标或者SVG图标，来代替传统的PNG等格式的图片
-减少对DOM的操作
-在JS中避免“嵌套循环”和 “死循环”
-尽可能使用事件委托（事件代理）来处理事件绑定的操作
 
----
 减小资源（静态资源，后端加载的数据）大小
-- 压缩代码HTML/CSS/JS
+- 压缩代码HTML/CSS/JS( UglifyJS)
 - 压缩图片、音视频大小
-- Tree-Sharking 消除无用代码
+- Tree-Sharking 消除无用代码(通过检测源码中不会被使用到的部分，将其删除，从而减小代码的体积。)
   
 以上webpack都可以搞定
 
->Gzip
+>此外 Gzip
 从HTTP / 1.1开始，客户端可以通过使用HTTP请求中的Accept-Encoding: gzip, deflate来指示对压缩的支持。如果服务器在请求中看到此标头，则可以使用客户端列出的方法之一压缩响应，服务器通过响应中的Content-Encoding: gzip通知客户端采用gzip压缩。
 
 避免同一时间的过多次数请求
-- CSS 实现雪碧图：使用background-position共享一张图
+- CSS 实现雪碧图
+  >不同的图标元素都会将 background-url 设置为合并后的雪碧图的 uri；
+不同的图标通过设置对应的 background-position 来展示大图中对应的图标部分。
 - 图片懒加载：监听滚动后offsetTop,  使用src 替换 src（真实路径）
+- 内联 base64 图片
+  >当浏览器解析到这个的图片 url 时，就不会去请求并下载图片，直接解析 base64 字符串即可。
+  但是这种方式的一个缺点在于相同的图片，相比使用二进制，变成 base64 后体积会增大 33%。
 - 列表懒加载（分批加载）：监听滚动后offsetTop， 发送请求加载下一页的数据
 - 路由懒加载
 - 代码分包分块加载（webpack）
@@ -1011,16 +1001,22 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/Input
  
 利用缓存（空间换时间）
 - CDN 内容分发：获取更近网络节点缓存下来的静态资源
-- 浏览器缓存（自带）
-- 部分资源保存在LocalStorage或者APP缓存中（手动操作）
+- 浏览器缓存（http缓存 自带）
+- 部分资源保存在LocalStorage、sessionStorage、indexedDB或者APP缓存中（手动操作）
   
 其他
 - SSR 服务端渲染：解决SPA框架带来JS动态渲染页面带来的延迟和白屏问题。
 
+页面解析
+- 注意资源在页面文档中的位置(JavaScript 会阻塞 DOM 构建，而 CSSOM 的构建又回阻塞 JavaScript 的执行。)
+-  使用 defer 和 async
+-  慎用 @import(会把请求变得串行化)
+
 >作者：天要
 链接：https://www.zhihu.com/question/458055934/answer/1954186301
 
->https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/%E5%89%8D%E7%AB%AF%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88.md
+>[前端性能优化之旅](https://alienzhou.com/projects/fe-performance-journey/#%E5%89%8D%E7%AB%AF%E9%9C%80%E8%A6%81%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%B9%88%EF%BC%9F)
+https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/%E5%89%8D%E7%AB%AF%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88.md
 
 #### 前端需要注意哪些SEO
 作者：不拿offer不放弃_
