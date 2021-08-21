@@ -648,8 +648,9 @@ function deepClone( originObj, map = new WeakMap() ) {
     }
     //这个对象还没有被记录，将其引用记录在map中，进行拷贝    
     let result = Array.isArray(originObj) ? [] : {};  //拷贝结果
-    map.set(originObj, result); //记录引用关系
     let keys = Object.keys(originObj); //originObj的全部key集合
+
+    map.set(originObj, result); //记录引用关系, 在这个阶段就可以set了
     //拷贝
     for(let key of keys) {
         result[key] = deepClone(originObj[key], map);
@@ -694,6 +695,7 @@ var Foo = (function (){
   }
 })()
 
+// Foo是一个闭包
 // 也可以用 new，因为构造函数返回对象的话
 // new 返回的就是return后面的对象
 a = new Foo()
@@ -771,7 +773,6 @@ Array.prototype.myMap = function(callback, context){
     // return x + y
     // }
     // 这里x就是arr[i]， y就是传入的i
-})
     mappedArr.push(callback.call(context, arr[i], i, this));
   }
   return mappedArr;
@@ -1941,9 +1942,14 @@ var f = function(s) {
 function render(template, data) {
   const reg = /\$\{(\w+)\}/; // 模板字符串正则
   if (reg.test(template)) { // 判断模板里是否有模板字符串
-    const name = reg.exec(template)[1]; // 查找当前模板里第一个模板字符串的字段
+
+     // 查找当前模板里第一个模板字符串的字段
+    // 注意第二个才是对应的（组匹配）字符串。["${aaa}", "aaa"]
+    const name = reg.exec(template)[1]; 
     // 注意replace替换第一个匹配成功的值，加 g才替换所有
-    template = template.replace(reg, data[name]); // 将第一个模板字符串渲染
+    // 注意 replace不改变原字符串!!
+    // 将第一个模板字符串渲染
+    template = template.replace(reg, data[name]); 
     return render(template, data); // 递归的渲染并返回渲染后的结构
   }
   return template; // 如果模板没有模板字符串直接返回
@@ -1967,8 +1973,10 @@ function render(template, data) {
 function parseToMoney(num) {
   num = parseFloat(num.toFixed(3));
   let [integer, decimal] = String.prototype.split.call(num, '.');
-  integer = integer.replace(/\d(?=(\d{3})+$)/g, '$&,');
-  return integer + '.' + (decimal ? decimal : '');
+  // integer = integer.replace(/\d(?=(\d{3})+$)/g, '$&,');
+  // '$&,'代表组匹配匹配到的字符串. 或者用函数:
+  integer = integer.replace(/\d(?=(\d{3})+$)/g, (match) => match + ',');
+  return integer + (decimal ? '.' + decimal : '');
 }
 ```
 
