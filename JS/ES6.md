@@ -407,7 +407,7 @@ Symbol 作为属性名，**遍历对象**的时候，该属性不会出现在for
 
 ### 其他
 
- rest 参数 模板字符串
+ rest 参数 模板字符串 Map Set
 
 >见 https://www.yuque.com/cuggz/interview/vgbphi#3fb2aa8bcb617ca0de8bfafd7da899e3
 >https://es6.ruanyifeng.com/?search=EPSILON&x=4&y=8

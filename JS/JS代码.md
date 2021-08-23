@@ -528,7 +528,7 @@ function getJSON(url) {
 const shallowClone = (target) => {
   if (typeof target === 'object' && target !== null) {
     // 根据 target 的类型判断是新建一个数组还是对象
-    // 函数不需要单独处理（没有对象中的那些属性）(是深拷贝)
+    // 函数不需要单独处理（没有对象中的那些属性）
     const cloneTarget = Array.isArray(target) ? []: {}
     for (let prop in target) {
       if (target.hasOwnProperty(prop)) { // 是否是自身（非继承）属性
@@ -593,7 +593,8 @@ console.log(obj2); //{a:1,b:{c:2}}
 ```js
 function deepClone(obj) {
     // 如果是 值类型 或 null，则直接return
-     // 注意 函数也是直接返回，因为他不可遍历
+     // 注意 函数也是直接返回，因为他不可遍历(但是是浅拷贝)
+    //  实际上函数不需要深拷贝，lodash也是直接返回的
     if(typeof obj !== 'object' || obj === null) {
         return obj
     }
@@ -663,6 +664,38 @@ function deepClone( originObj, map = new WeakMap() ) {
 原文链接：https://blog.csdn.net/Snoopyqiuer/article/details/101106303
 
 >[解决循环引用和相同引用的js深拷贝实现(BFS)](https://segmentfault.com/a/1190000021682472)
+
+---
+深拷贝一个函数
+
+```js
+function cloneFunction(func) {
+    const bodyReg = /(?<={)(.|\n)+(?=})/m;
+    const paramReg = /(?<=\().+(?=\)\s+{)/;
+    const funcString = func.toString();
+    if (func.prototype) {
+        console.log('普通函数');
+        const param = paramReg.exec(funcString);
+        const body = bodyReg.exec(funcString);
+        if (body) {
+            console.log('匹配到函数体：', body[0]);
+            if (param) {
+                const paramArr = param[0].split(',');
+                console.log('匹配到参数：', paramArr);
+                // 关键步，要把函数体放进去
+                return new Function(...paramArr, body[0]);
+            } else {
+              // 关键步，要把函数体放进去
+                return new Function(body[0]);
+            }
+        } else {
+            return null;
+        }
+    } else {
+        return eval(funcString);
+    }
+}
+```
 
 #### 静态属性
 写一个函数 Foo 要求:
@@ -831,7 +864,7 @@ Array.prototype.myFilter=function(callback, context=window){
 const res1 = arr.flat(Infinity);
 ```
 
-##### 正则和 JSON 方法
+##### JSON 方法
 ```js
 let arr = [1, [2, [3, [4, 5]]], 6];
 function flatten(arr) {
@@ -859,6 +892,7 @@ console.log(flatten(arr)); //  [1, 2, 3, 4，5]
 let arr = [1, [2, [3, 4]]];
 function flatten(arr) {
     while (arr.some(item => Array.isArray(item))) {
+      // 一层一层地展开
         arr = [].concat(...arr);
     }
     return arr;
@@ -873,6 +907,7 @@ console.log(flatten(arr)); //  [1, 2, 3, 4]
 ```js
 function flatten(arr) {
     return arr.reduce(function(prev, next){
+         // 也是递归
         return prev.concat(Array.isArray(next) ? flatten(next) : next)
     }, [])
 }
@@ -929,7 +964,7 @@ function uniqueArray(array) {
   let res = [];
   for(var i = 0; i < array.length; i++) {
     if(!map.hasOwnProperty([array[i]])) {
-      map[array[i]] = 1;
+      map[array[i]] = true;
       res.push(array[i]);
     }
   }
@@ -952,7 +987,7 @@ function unique(arr) {
     return res
 }
 
-// 或者可以这样，利用排序 + filter
+// 【更好】或者可以这样，利用排序 + filter
 function unique(arr) {
     return arr.concat().sort().filter(function(item, index, array){
         return !index || item !== arr[index - 1]
@@ -984,6 +1019,9 @@ function distinct(a, b) {
 
 - 通过 Array.from 方法来实现转换
 `Array.from(arrayLike);`
+
+- 扩展运算符(注意它只能作用于 iterable 对象)
+  `var args = [...arguments];`
 
 #### 对象数组去重
 ```js
@@ -1975,10 +2013,14 @@ function parseToMoney(num) {
   let [integer, decimal] = String.prototype.split.call(num, '.');
   // integer = integer.replace(/\d(?=(\d{3})+$)/g, '$&,');
   // '$&,'代表组匹配匹配到的字符串. 或者用函数:
+  // 不加$结尾会贪婪模式，每次前进一个字符，只要后面有三个字符就匹配
+  // 加上表示末尾跟着几个d组
   integer = integer.replace(/\d(?=(\d{3})+$)/g, (match) => match + ',');
   return integer + (decimal ? '.' + decimal : '');
 }
 ```
+
+"a?b+$"：表示在字符串的末尾有零个或一个a跟着一个或几个b。
 
 
 #### 解析 URL

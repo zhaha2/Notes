@@ -8,7 +8,7 @@
   - [3.1 语义化好处](#31-语义化好处)
   - [3.2 注意语义化编写](#32-注意语义化编写)
   - [3.3 常见的语义化标签](#33-常见的语义化标签)
-- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype文档类型-的作用)
+- [4. DOCTYPE(⽂档类型) 的作⽤](#4-doctype档类型-的作)
   - [4.1 为什么HTML5只需要写`<!DOCTYPE HTML>`](#41-为什么html5只需要写doctype-html)
 - [5. script标签中defer和async的区别](#5-script标签中defer和async的区别)
   - [load 与 DOMContentLoaded 的区别](#load-与-domcontentloaded-的区别)
@@ -16,20 +16,33 @@
 - [6. meta标签](#6-meta标签)
 - [7. HTML5有哪些更新](#7-html5有哪些更新)
   - [7.1 语义化标签](#71-语义化标签)
+    - [7.1.1 title与h1的区别、b与strong的区别、i与em的区别](#711-title与h1的区别b与strong的区别i与em的区别)
   - [7.2 媒体标签](#72-媒体标签)
   - [7.3 表单](#73-表单)
-  - [7.4 进度条、度量器](#74-进度条-度量器)
+    - [7.3.1 H5中新增的语义标签](#731-h5中新增的语义标签)
+    - [7.3.2 表单属性](#732-表单属性)
+    - [7.3.3 表单事件](#733-表单事件)
+  - [7.4 进度条、度量器](#74-进度条度量器)
   - [7.5 Web存储](#75-web存储)
+    - [7.5.1 如何设置localStorage的存储时间](#751-如何设置localstorage的存储时间)
+    - [7.5.2 浏览器本地存储方式及使用场景](#752-浏览器本地存储方式及使用场景)
+      - [7.5.2.1 Cookie](#7521-cookie)
+      - [7.5.2.2 LocalStorage](#7522-localstorage)
+      - [7.5.2.3 SessionStorage](#7523-sessionstorage)
   - [7.6 DOM操作](#76-dom操作)
+    - [7.6.1 获取元素](#761-获取元素)
+    - [7.6.2 类名操作](#762-类名操作)
+    - [7.6.3 自定义属性](#763-自定义属性)
   - [7.7 Drag API](#77-drag-api)
   - [7.8 web worker](#78-web-worker)
-  - [7.9 drag API](#79-drag-api)
-  - [7.10 其他](#710-其他)
+  - [其他](#其他)
   - [7.11 总结](#711-总结)
 - [8. HTML5的离线储存](#8-html5的离线储存)
   - [缓存的一些应用场景](#缓存的一些应用场景)
   - [manifest](#manifest)
+  - [8.1 浏览器是如何对 HTML5 的离线储存资源进行管理和加载的](#81-浏览器是如何对-html5-的离线储存资源进行管理和加载的)
   - [PWA(Service Worker)](#pwaservice-worker)
+    - [Service Worker](#service-worker)
 - [9. img的srcset属性](#9-img的srcset属性)
 - [10. label](#10-label)
 - [11. 浏览器乱码的原因是什么？如何解决](#11-浏览器乱码的原因是什么如何解决)
@@ -57,7 +70,7 @@ iframe 会阻塞主页面的 onload 事件
 会产生很多页面，不容易管理
 
 ### 2. src和href的区别
-src 用于替换当前元素，href 用于在当前文档和引用资源之间确立联系。
+关键：src 用于替换当前元素，href 用于在当前文档和引用资源之间确立联系。
 1. src
 src 是 source 的缩写，指向外部资源的位置，指向的内容将会嵌入到文档中当前标签所在位置；在请求 src 资源时会将其指向的资源下载并应用到文档内，例如 js 脚本，img 图片和 frame 等元素。这也是为什么将js脚本放在底部而不是头部。
   ``` <script src =”js.js”></script> ```
@@ -119,7 +132,7 @@ DOCTYPE是HTML5中一种标准通用标记语言的文档类型声明，它的�
 
 浏览器渲染页面的两种模式（可通过document.compatMode获取，比如，语雀官网的文档类型是CSS1Compat）：
 - CSS1Compat：标准模式(严格模式)（Strick mode），默认模式，浏览器使用W3C的标准解析渲染页面。在标准模式中，浏览器以其支持的最高标准呈现页面。
-- BackCompat：怪异模式(混杂模式)(Quick mode)，浏览器使用自己的怪异模式解析渲染页面。在怪异模式中，页面以一种比较宽松的向后兼容的方式显示。
+- BackCompat：怪异模式(混杂模式)(Quick mode)，浏览器使用自己的怪异模式解析渲染页面。在怪异模式中，页面以一种比较宽松的**向后兼容**的方式显示。
 >见 https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/DOCTYPE.md
 
 ---
@@ -208,7 +221,6 @@ meta 元素定义的元数据的类型包括以下几种：
   copyright
   viewport(适配移动端，可以控制视口的大小和比例)
 
-？？viewport是做什么的
 ### 7. HTML5有哪些更新
 #### 7.1 语义化标签
 header：定义文档的页眉（头部）；
@@ -293,7 +305,7 @@ aside：定义其所处内容之外的内容（侧边）；
     <fieldset>
         <legend>表单类型</legend>
         <label for="">
-            email: <input type="email" name="email" required>
+            email: <input type="email" name="email" required placeholder="例如：a@a.com">
         </label>
         <label for="">
             color: <input type="color" name="color">
@@ -401,9 +413,9 @@ sessionStorage.clear();
 https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/LocalStorage%E4%B8%8ESessionStorage.md
 
 ##### 7.5.1 如何设置localStorage的存储时间
-重写 set(存入) 方法：
+- 重写 set(存入) 方法：
 存入的值由原本的value改为对象，增加属性：time，对应过期时间。因为localStrorage值不能为对象，所以用json（JSON.stringify）转化。
-重写 get(获取) 方法：
+- 重写 get(获取) 方法：
 JSON.parse取出，判断
 >http://www.fly63.com/article/detial/1348
 >https://blog.csdn.net/weixin_43254766/article/details/83618630
@@ -483,22 +495,19 @@ public void doFilter(ServletRequest servletRequest, ServletResponse servletRespo
 }
 ```
 
-此外还可能有SameSite问题
+此外还可能有SameSite问题(Chrome 80之后，该功能默认已开启)
 
 1. 将SameSite属性值改为None, 同时 将secure属性设置为true。且需要将后端服务域名必须使用https协议访问。
 2. 由于设置SameSite = None，有CSRF风险，所以，最佳方案是用token代替Cookie方式作验证。
 
->https://segmentfault.com/a/1190000039227924
+>[COOKIE跨域获取问题](https://segmentfault.com/a/1190000039227924)
+[Cookie 的 SameSite 属性](https://www.ruanyifeng.com/blog/2019/09/cookie-samesite.html)
 
 ---
-作者：但愿不头疼
-链接：https://www.nowcoder.com/discuss/648552?channel=-1&source_id=profile_follow_post_nctrack
-来源：牛客网
-
 1. 讲一下cookie？
-  我的理解是 cookie 是服务器提供的一种用于维护会话状态信息的数据，通过服务器发送到浏览器，浏览器保存在本地的一种纯文本文件，当下一次有同源的请求时，将保存的 cookie 值添加到请求头部，发送给服务端。这可以用来实现记录用户登录状态等功能。cookie 一般可以存储 4k 大小的数据，并且只能够被同源的网页所共享访问。
+  我的理解是 cookie 是服务器提供的一种用于**维护会话状态信息**的数据，通过服务器发送到浏览器，浏览器保存在本地的一种纯文本文件，当下一次有同源的请求时，将保存的 cookie 值添加到请求头部，发送给服务端。这可以用来实现记录用户登录状态等功能。cookie 一般可以存储 4k 大小的数据，并且只能够被同源的网页所共享访问。
 
-    服务器端可以使用 Set-Cookie 的响应头部来配置 cookie 信息。一条cookie 包括了5个属性值 expires、domain、path、secure、HttpOnly。其中 expires 指定了 cookie 失效的时间，domain 是域名、path是路径，domain 和 path 一起限制了 cookie 能够被哪些 url 访问。secure 规定了 cookie 只能在确保安全的情况下传输，HttpOnly 规定了这个 cookie 只能被服务器访问，不能在客户端使用js 脚本访问。
+    服务器端可以使用 Set-Cookie 的响应头部来配置 cookie 信息。一条cookie 包括了属性值 name、expires、domain、path、secure、HttpOnly、SameSite。其中 expires 指定了 cookie 失效的时间，domain 是域名、path是路径，domain 和 path 一起限制了 cookie 能够被哪些 url 访问。secure 规定了 cookie 只能在确保安全的情况下传输，HttpOnly 规定了这个 cookie 只能被服务器访问，不能在客户端使用js 脚本访问。
     客户端可以通过JS脚本,例如document.cookie="key=value"形式设置cookie
 
     在发生 xhr 的**跨域**请求的时候，即使是同源下的 cookie，**也不会被自动添加到请求头部**，除非显示地规定。
@@ -508,6 +517,9 @@ session是服务器为了保存用户状态而创建的一个特殊的对象
 
     在浏览器第一次访问服务器时,服务器会创建一个session对象,该对象有一个唯一的id,即sessionid,服务器会把sessionid以cookie的形式发送给浏览器,当浏览器再次访问服务器时,会携带cookie在请求头,可以通过cookie中的sessionid来访问session对象
     可以实现在http无状态基础上实现用户状态管理(即**两个页面之间的用户状态**,我可以保存在session中)
+
+>作者：但愿不头疼
+链接：https://www.nowcoder.com/discuss/648552?channel=-1&source_id=profile_follow_post_nctrack
 
 **什么情况下会带上cookie**
 
@@ -594,7 +606,7 @@ LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息
 - 存在浏览器兼容问题，IE8以下版本的浏览器不支持
 - 如果浏览器设置为隐私模式，那我们将无法读取到LocalStorage
 - LocalStorage受到**同源策略**的限制，即端口、协议、主机地址有任何一个不相同，都不会访问
-  >?应该和cookie的domain属性不同，LocalStorage中子域名也不可以访问。要想访问要跨域（postMessage）
+  >和cookie的domain属性不同，LocalStorage中子域名也不可以访问。要想访问要跨域（postMessage）
   
 >  稍后 [localstorage的跨域存储方案](https://www.jianshu.com/p/e86d92aeae69)
 
@@ -637,6 +649,8 @@ SessionStorage和LocalStorage都是在HTML5才提出来的存储方案，Session
 js 里可以通过 `box1.index=100;`  `box1.title` 来自定义属性和获取属性。
 
 H5可以直接在标签里添加自定义属性，**但必须以 `data-` 开头**。
+
+它初衷是数据应与特定的元素相关联，但不需要任何定义。data-* 属性允许我们在标准内于HTML元素中存储额外的信息，而不需要使用类似于 classList，标准外属性，DOM额外属性或是 setUserData 之类的技巧。
 
 举例：
 
@@ -748,30 +762,7 @@ web worker**子线程完全受主线程控制，且不得操作DOM**。所以这
 >https://zhuanlan.zhihu.com/p/79484282
 http://www.ruanyifeng.com/blog/2018/07/web-worker.html
 
-#### 7.9 drag API 
-拖放是一种常见的特性，即捉取对象以后拖到另一个位置，在HTML5中，拖放是标准的一部分，任何元素都能够拖放。
-
-**示例**
-```html
-<div draggable="true" ondragstart="drag(event)">Drag</div>
-<script type="text/javascript">
-    function drag(e){
-        console.log(e);
-    }
-</script>
-```
-
-**事件**
-* `ondrag`: 当拖动元素或选中的文本时触发。
-* `ondragend`: 当拖拽操作结束时触发，例如松开鼠标按键或敲`Esc`键。
-* `ondragenter`: 当拖动元素或选中的文本到一个可释放目标时触发。
-* `ondragexit`: 当元素变得不再是拖动操作的选中目标时触发。
-* `ondragleave`: 当拖动元素或选中的文本离开一个可释放目标时触发。
-* `ondragover`: 当元素或选中的文本被拖到一个可释放目标上时触发，每`100`毫秒触发一次。
-* `ondragstart`: 当用户开始拖动一个元素或选中的文本时触发。
-* `ondrop`: 当元素或选中的文本在可释放目标上被释放时触发。
-
-#### 7.10 其他
+#### 其他
 - 画布（canvas ）： canvas 元素使用 JavaScript 在网页上绘制图像。画布是一个矩形区域，可以控制其每一像素。canvas 拥有多种绘制路径、矩形、圆形、字符以及添加图像的方法。
   ```html
   <canvas id="myCanvas" width="200" height="100"></canvas>
