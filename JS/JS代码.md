@@ -617,6 +617,10 @@ function deepClone(obj) {
 } 
 ```
 
+————————————————
+版权声明：本文为CSDN博主「Tautus」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/Snoopyqiuer/article/details/101106303
+
 ---
 针对循环引用的实现
 
@@ -659,9 +663,6 @@ function deepClone( originObj, map = new WeakMap() ) {
     return result;
   }
 ```
-————————————————
-版权声明：本文为CSDN博主「Tautus」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
-原文链接：https://blog.csdn.net/Snoopyqiuer/article/details/101106303
 
 >[解决循环引用和相同引用的js深拷贝实现(BFS)](https://segmentfault.com/a/1190000021682472)
 
@@ -1062,6 +1063,8 @@ Array.prototype.shuffle = function() {
     let len = array.length, i;
     while (len) {
       // len为剩余未交换数组长度，i为随机交换位置
+      // 坑 这里因为用floor 所以第一次len为 result.length
+     // 而不是 result.length-1
         i = Math.floor(Math.random() * len--);
         [array[len], array[i]] = [array[i], array[len]];
     }
@@ -1086,7 +1089,7 @@ JSONP 是服务器与客户端跨源通信的常用方法。最大特点就是�
 
 它的做法如下。
 
-第一步，网页添加一个`<script>`元素，向服务器请求一个脚本，这不受同源政策限制，可以跨域请求。
+1. 第一步，网页添加一个`<script>`元素，向服务器请求一个脚本，这不受同源政策限制，可以跨域请求。
 
 ```html
 <script src="http://api.foo.com?callback=bar"></script>
@@ -1094,15 +1097,16 @@ JSONP 是服务器与客户端跨源通信的常用方法。最大特点就是�
 
 注意，请求的脚本网址有一个`callback`参数（`?callback=bar`），用来告诉服务器，客户端的回调函数名称（`bar`）。
 
-第二步，服务器收到请求后，拼接一个字符串，将 JSON 数据放在函数名里面，作为字符串返回（`bar({...})`）。
+2. 第二步，服务器收到请求后，拼接一个字符串，将 JSON 数据放在函数名里面，作为字符串返回（`bar({...})`）。
 
-第三步，客户端会将服务器返回的字符串，作为代码解析，因为浏览器认为，这是`<script>`标签请求的脚本内容。这时，客户端只要定义了`bar()`函数，就能在该函数体内，拿到服务器返回的 JSON 数据。
+3. 第三步，客户端会将服务器返回的字符串，作为代码解析，因为浏览器认为，这是`<script>`标签请求的脚本内容。这时，客户端只要定义了`bar()`函数，就能在该函数体内，拿到服务器返回的 JSON 数据。
 
 下面看一个实例。首先，网页动态插入`<script>`元素，由它向跨域网址发出请求。
 
 ```javascript
 function addScriptTag(src) {
   var script = document.createElement('script');
+  // 默认 不设置也行
   script.setAttribute('type', 'text/javascript');
   script.src = src;
   document.body.appendChild(script);
@@ -1127,7 +1131,7 @@ foo({
 });
 ```
 
-由于`<script>`元素请求的脚本，直接作为代码运行。这时，只要浏览器定义了`foo`函数，该函数就会立即调用。作为参数的 JSON 数据被视为 JavaScript 对象，而不是字符串，因此避免了使用`JSON.parse`的步骤。
+由于`<script>`元素请求的脚本，直接作为代码运行。这时，只要浏览器定义了`foo`函数，该函数就会立即调用。**作为参数的 JSON 数据被视为 JavaScript 对象**，而不是字符串，因此**避免了使用`JSON.parse`的步骤**。
 
 ---
 ```js
@@ -1722,197 +1726,6 @@ function fibonacci(n) {
 }
 ```
 
-#### 将数字每千分位用逗号隔开
-```js
-let format = n => {
-    let num = n.toString() // 转成字符串
-    let decimals = ''
-        // 判断是否有小数
-    num.indexOf('.') > -1 ? decimals = num.split('.')[1] : decimals
-    let len = num.length
-    if (len <= 3) {
-        return num
-    } else {
-        let temp = ''
-        let remainder = len % 3
-        // 判断decimals是否是空字符串，相当于当作布尔值
-        decimals ? temp = '.' + decimals : temp
-        if (remainder > 0) { // 不是3的整数倍
-        // 这里slice() 方法是String.protype的方法不是数组的。 
-        // 提取某个字符串的一部分，并返回一个新的字符串，且不会改动原字符串。
-        // 先把不是三的倍数的余数部分单独提出来，不然match会自动把三的倍数外多余的部分忽略掉。
-            return num.slice(0, remainder) + ',' + num.slice(remainder, len).match(/\d{3}/g).join(',') + temp
-        } else { // 是3的整数倍
-        // 感觉不用slice也行
-            return num.slice(0, len).match(/\d{3}/g).join(',') + temp 
-        }
-    }
-}
-format(12323.33)  // '12,323.33'
-```
-
-#### 大数相加
-```js
-function sumBigNumber(a, b) {
-  let res = '';
-  let temp = 0;
-  
-  a = a.split('');
-  b = b.split('');
-  
-  while (a.length || b.length || temp) {
-    // ~~相当于取整，等于Math.floor
-    // 这里主要是转为数字
-    // 注意这里用parseInt的话条件会比较苛刻，因为
-    // 如果a.pop或b.pop其中一个为空时，parseInt就会输出NAN了，而~~输出0
-    temp += ~~a.pop() + ~~b.pop();
-    res = (temp % 10) + res;
-    temp  = temp > 9
-  }
-  return res.replace(/^0+/, '');
-}
-```
-
->补充 ~~undefined 输出 0
-> +undefined和parseInt（undefined）输出NAN
-
-#### 排序
-https://segmentfault.com/a/1190000021638663
-
-#### 二叉树遍历
-https://www.jianshu.com/p/456af5480cee
-
-#### 最长上升子序列
-动归 https://leetcode-cn.com/problems/longest-increasing-subsequence/solution/zui-chang-shang-sheng-zi-xu-lie-by-leetcode-soluti/
-
-#### 买卖股票
-单调栈 https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/solution/c-li-yong-shao-bing-wei-hu-yi-ge-dan-diao-zhan-tu-/
-
-动归 https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/solution/gu-piao-wen-ti-python3-c-by-z1m/
-
-#### 海量数据处理
-https://blog.csdn.net/zyq522376829/article/details/47686867
-https://blog.csdn.net/v_JULY_v/article/details/6279498
-
-#### 全排列
-
-递归回溯
-
-```js
-/**
- * @param {number[]} nums
- * @return {number[][]}
- */
-
-var permute = function(nums) {
-    const res = [], path = []
-    const used = new Array(nums.length).fill(false)
-
-    const dfs = () => {
-      // 用path保存当前状态 关键
-        if (path.length == nums.length) {
-          // slice返回新数组，不能直接用原path
-            res.push(path.slice())
-            return
-        }
-
-        for (let i = 0; i < nums.length; i++) {
-            if (used[i]) continue
-            path.push(nums[i])
-            used[i] = true
-            dfs()
-            // 恢复状态
-            path.pop()
-            used[i] = false
-        }
-    }
-
-    dfs()
-    return res
-};
-```
-
->https://leetcode-cn.com/problems/permutations/
-
-#### 反转链表
-
-```js
-/**
- * Definition for singly-linked list.
- * function ListNode(val) {
- *     this.val = val;
- *     this.next = null;
- * }
- */
-/**
- * @param {ListNode} head
- * @return {ListNode}
- */
-var reverseList = function(head) {
-    let prev = null;
-    let curr = head;
-    while (curr) {
-        const next = curr.next;
-        curr.next = prev;
-        prev = curr;
-        curr = next;
-    }
-    return prev;
-};
-```
-
-递归
-```js
-var reverseList = function(head) {
-    if (head == null || head.next == null) {
-        return head;
-    }
-    const newHead = reverseList(head.next);
-    head.next.next = head;
-    head.next = null;
-    return newHead;
-};
-```
-
->https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/solution/fan-zhuan-lian-biao-by-leetcode-solution-jvs5/
-
-#### 环形链表
-
-快慢指针
-
-```js
-/**
- * Definition for singly-linked list.
- * function ListNode(val) {
- *     this.val = val;
- *     this.next = null;
- * }
- */
-
-/**
- * @param {ListNode} head
- * @return {boolean}
- */
-var hasCycle = function(head) {
-    if (head === null || head.next === null) {
-        return false
-    }
-
-    let slow = head, fast = head.next
-    while(fast !== slow) {
-        if (fast === null || fast.next === null) {
-        return false
-        }
-        fast = fast.next.next
-        slow = slow.next
-    }
-
-    return true
-};
-```
-
->https://leetcode-cn.com/problems/linked-list-cycle/submissions/
-
 #### 青蛙跳台阶
 
 就是斐波那契
@@ -1961,15 +1774,219 @@ var numWays = function(n) {
 };
 ```
 
+#### 大数相加
+```js
+function sumBigNumber(a, b) {
+  let res = '';
+  let temp = 0;
+  
+  a = a.split('');
+  b = b.split('');
+  
+  while (a.length || b.length || temp) {
+    // ~~相当于取整，等于Math.floor
+    // 这里主要是转为数字
+    // 注意这里用parseInt的话条件会比较苛刻，因为
+    // 如果a.pop或b.pop其中一个为空时，parseInt就会输出NAN了，而~~输出0
+    temp += ~~a.pop() + ~~b.pop();
+    res = (temp % 10) + res;
+    temp  = temp > 9
+  }
+  return res.replace(/^0+/, '');
+}
+```
+
+>补充 ~~undefined 输出 0
+> +undefined和parseInt（undefined）输出NAN
+
+#### 排序
+[十大经典排序算法总结（JavaScript描述）](https://juejin.cn/post/6844903444365443080)
+
+![](image/2021-08-26-20-58-43.png)
+
+v8 排序采用的算法跟数组的长度有关，当数组长度小于等于 10 时，采用插入排序，大于 10 的时候，采用快速排序。(实际上是快排和插入的结合，当快排递归得到的子序列较短时，用插入)。
+
+##### 插入类
+
+1. 直接插入
+
+<1>.从第一个元素开始，该元素可以认为已经被排序；
+<2>.取出下一个元素，在已经排序的元素序列中从后向前扫描；
+<3>.如果该元素（已排序）大于新元素，将该元素移到下一位置；
+<4>.重复步骤3，直到找到已排序的元素小于或者等于新元素的位置；
+<5>.将新元素插入到该位置后；
+<6>.重复步骤2~5。
+
+```js
+function insertionSort(array) {
+  for (let i = 1; i < array.length; i++) {
+    // 前面已经有序，比前面大则直接插在后面
+    if (array[i - 1] <= array[i]) continue;
+
+    const key = array[i];
+    let j;
+    // 注意判断条件
+    for (j = i - 1; j >= 0 && array[j] >= key; j--) {
+      // j元素后移
+      // 坑 注意是移动 不是交换
+      array[j+1] = array[j]
+    }
+    // 在当前位置插入key
+    array[j + 1] = key;
+  }
+}
+```
+2. 希尔排序
+
+缩小增量 优化的插排
+
+##### 交换类
+1. 冒泡排序
+
+```js
+function bubbleSort(array) {
+  const len = array.length;
+  for (let i = 0; i < len; i++) {
+    let flag = false;
+
+    for (let j = 0; j < len - i - 1; j++) {
+      if (array[j] > array[j + 1]) {
+        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+        flag = true;
+      }
+    }
+    if (flag === false) return;
+  }
+}
+```
+
+
+2. 快速排序
+
+```js
+var sortArray = function(nums) {
+  const sort = (nums, left = 0, right = nums.length - 1) => {
+    // 坑 别忘了边界条件
+    if (left >= right) return;
+
+    const pivot = partition(nums, left, right);
+    sort(nums, left, pivot - 1);
+    sort(nums, pivot + 1, right);
+  }
+
+  // 将pivot(当前部分数组中第一个元素)左边都放比它小的，右边都是比它大的
+  const partition = (nums, left, right) => {
+    /* 
+      通常的、没有经过充分考虑的选择是将第一个元素做为"基准“。
+      如果输入是随机的，那么这是可以接受的，但是如果输入是预排序的或是反序的，
+      那么这样的”基准“就是一个劣质的分割，因为所以的元素不是被划入S1就是被划入S2。
+      实际上，如果第一个元素用作”基准“而且输入是预先排序的，那么快速排序花费的时间将是二次的，
+      可是实际上却没干什么事，因此，使用第一个元素作为”基准“是绝对糟糕的。
+    */
+    // 随机选一个作为我们的主元 交换到最左
+    const randIndex = Math.floor(Math.random() * (right - left + 1)) + left;
+    [nums[left], nums[randIndex]] = [nums[randIndex], nums[left]];
+    const pivot = nums[left];
+    // // 坑 别写成array[0]了
+    // const pivot = array[left];
+
+    while (left < right) {
+      // 找到右边第一个比pivot大的元素 交换到左边
+      while (left < right && nums[right] >= pivot) right--;
+      nums[left] = nums[right];
+
+      while (left < right && nums[left] <= pivot) left++;
+      nums[right] = nums[left];
+    }
+
+    // 坑 别忘了复原
+    nums[left] = pivot;
+    return left;
+  }
+
+  sort(nums);
+  return nums;
+};
+const arr = [15, 10, 6, 34, 21, 66, 32]
+quickSort(arr);
+```
+
+##### 选择类
+
+1. 简单选择 
+
+```js
+function selectionSort(array) {
+  for (let i = 0; i < array.length; i++) {
+    let min = i;
+    // 本次找出第i小的元素
+    for (let j = i+1; j < array.length; j++) {
+      if (array[j] <= array[min]) min = j;
+    }
+    [array[i], array[min]] = [array[min], array[i]];
+  }
+}
+```
+
+2. 堆排序
+
+##### 归并排序
+
+```js
+function mergeSort(array, left = 0, right = array.length - 1) {
+  if (left >= right) return;
+
+  // 坑 别写错了
+  const mid = Math.floor((left + right)/2)
+  mergeSort(array, left, mid);  //递归对左子列排序
+  mergeSort(array, mid + 1, right);  //递归对右子列排序
+  merge(array, left, mid, right);   //左右数组合并
+} 
+
+// 合并数组
+function merge (array, left, mid, right) {
+  // 保存a的复制 不能直接改array的指向
+  const temp = array.slice();
+  // 坑 cur别写错了
+  let i = left, j = mid+1, cur = left;
+
+  for (; i <= mi  d && j <= right; cur++) {
+    if (temp[i] <= temp[j]) {
+      array[cur] = temp[i++];
+    } else {
+      array[cur] = temp[j++];
+    }
+  }
+
+  // 把剩余部分连在后面 不能用concat 因为concat不改变原数组
+  while (i <= mid) array[cur++] = temp[i++];
+  while (j <= right) array[cur++] = temp[j++];
+}
+```
+
+#### 二叉树遍历
+https://www.jianshu.com/p/456af5480cee
+
+#### 海量数据处理
+https://blog.csdn.net/zyq522376829/article/details/47686867
+https://blog.csdn.net/v_JULY_v/article/details/6279498
+
 ### 正则
+
+[25+正则面试题详尽解析，让你轻松通过正则面试，让你少写2000行代码](https://juejin.cn/post/6999768570570178596#heading-66)
+稍后 https://juejin.cn/post/6844903845227659271#heading-18
+
 
 #### 驼峰
 
 ```js
 var f = function(s) {
     return s.replace(/-\w/g, function(x) {
-      // 这里匹配到的x是 -w这样的
-        return x.slice(1).toUpperCase();
+        // 这里匹配到的x是 -w这样的
+        return x[1].toUpperCase();
+        // 或者 组匹配
+        // return s.replace(/-(\w)/g, (match,key)=>key.toUpperCase())
+
     })
 }
 ```
@@ -1979,6 +1996,7 @@ var f = function(s) {
 ```js
 function render(template, data) {
   const reg = /\$\{(\w+)\}/; // 模板字符串正则
+  // /\${(\w+)}/ 大括号不加\也行
   if (reg.test(template)) { // 判断模板里是否有模板字符串
 
      // 查找当前模板里第一个模板字符串的字段
@@ -1994,6 +2012,7 @@ function render(template, data) {
 }
 ```
 
+---
 ```js
 function render(template, data) {
   const reg = /\$\{(\w+?)\}/g; // 模板字符串正则
@@ -2001,20 +2020,30 @@ function render(template, data) {
 }
 ```
 
-- 注意，replace传入函数的话，第一个参数为match即匹配到的字符串，这里就是 ${a}这种，后面的为组匹配的内容（括号中的内容），比如这里就是 a.
+- 注意，replace传入函数的话，第一个参数为match即匹配到的字符串，这里就是 ${a}这种，后面的(key1,key2,...)为组匹配的内容（括号中的内容），比如这里就是 a.
 
 - 如果希望replace不全部替换,用非贪婪（+?）。不过这里不加也对，因为后面的会替换前面的。
+
+#### IPV4
+
+```js
+// 一位二位三位数分别处理（最大255）
+var reg = /^((\d|[1-9]\d|1\d{2}|2([0-4]\d|5[0-5]))\.){3}((\d|[1-9]\d|1\d{2}|2([0-4]\d|5[0-5])))$/
+```
+
 
 #### 千位分隔符
 
 ```js
 function parseToMoney(num) {
   num = parseFloat(num.toFixed(3));
+  // 或者String(num).split('.');
   let [integer, decimal] = String.prototype.split.call(num, '.');
   // integer = integer.replace(/\d(?=(\d{3})+$)/g, '$&,');
   // '$&,'代表组匹配匹配到的字符串. 或者用函数:
   // 不加$结尾会贪婪模式，每次前进一个字符，只要后面有三个字符就匹配
   // 加上表示末尾跟着几个d组
+  // 注意逗号写在后面
   integer = integer.replace(/\d(?=(\d{3})+$)/g, (match) => match + ',');
   return integer + (decimal ? '.' + decimal : '');
 }
@@ -2022,6 +2051,7 @@ function parseToMoney(num) {
 
 "a?b+$"：表示在字符串的末尾有零个或一个a跟着一个或几个b。
 
+**注意：replace不改变原字符串！！**
 
 #### 解析 URL
 ```js
