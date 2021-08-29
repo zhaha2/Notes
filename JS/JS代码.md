@@ -715,6 +715,14 @@ class Foo {
   }
 }
 
+// 或
+// var Foo = function (){
+//   this.id = Foo.prototype.id++
+  
+// }
+
+// Foo.prototype.id= 1;
+
 a = new Foo()
 b = new Foo()
 ```
@@ -728,6 +736,15 @@ var Foo = (function (){
     return {id}
   }
 })()
+
+// 或
+// var Foo = (function (){
+//   var id = 1
+//   return function() {
+//     this.id = id++
+//   }
+// })()
+
 
 // Foo是一个闭包
 // 也可以用 new，因为构造函数返回对象的话
@@ -791,7 +808,7 @@ class Cash {
 
 #### map
 ```js
-// context 可选 执行 callback 函数时值被用作this。
+// context 可选 执行 callback 函数时值被用作this。 别忘了
 Array.prototype.myMap = function(callback, context){
   // 转换类数组
   var arr = Array.prototype.slice.call(this),//由于是ES5所以就不用...展开符了
@@ -1181,7 +1198,7 @@ function getData(data) {
 
 >[js实现图片懒加载原理](https://blog.csdn.net/w1418899532/article/details/90515969?utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromMachineLearnPai2%7Edefault-4.control&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromMachineLearnPai2%7Edefault-4.control)
 
-[见](../css/03-css布局.md###6.如何判断元素是否到达可视区域 )
+[见 如何判断元素是否到达可视区域](../css/03-css布局.md###6.如何判断元素是否到达可视区域 )
 
 ##### clientHeight、scrollTop 和 offsetTop
 ![](image/2021-07-14-15-52-39.png)
@@ -1222,9 +1239,11 @@ function lazyLoad() {
 
 #####  getBoundingClientRect
 dom 元素的 getBoundingClientRect().top 属性可以直接判断图片是否出现在了当前视口。
->getClientRects() 返回的值是相对于**视图窗口**的左上角来计算的。
+>getClientRects() 返回的值是相对于**视图窗口**的**左上角**来计算的。
 >如果你需要获得相对于整个网页左上角定位的属性值，那么只要给top、left属性值加上当前的滚动位置（通过 window.scrollX 和 window.scrollY），这样就可以获取与当前的滚动位置无关的值。
 >https://developer.mozilla.org/zh-CN/docs/Web/API/Element/getBoundingClientRect
+
+![](image/2021-08-28-22-06-35.png)
 
 ```js
 // 只修改一下 lazyLoad 函数
@@ -1244,15 +1263,15 @@ IntersectionObserver 浏览器内置的 API，实现了监听 window 的 scroll 
 
 ```js
 let imgs = document.getElementsByTagName("img")
-const observer = new IntersectionObserver(changes => {
-    for(let i=0, len=imgs.length; i<len; i++) {
-        let img = imgs[i]
-        // 通过这个属性判断是否在视口中，返回 boolean 值
-        if(img.isIntersecting) {
-            const imgElement = img.target
-            imgElement.src = imgElement.getAttribute("data-src")
-            observer.unobserve(imgElement) // 解除观察
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(item => {
+        // isIntersecting是一个Boolean值，判断目标元素当前是否可见
+        if (item.isIntersecting) {
+            item.target.src = item.target.dataset.src;
+            // 图片加载后即停止监听该元素
+            observer.unobserve(item.target);
         }
+    })
     }
 })
 Array.from(imgs).forEach(item => observer.observe(item)) // 调用
@@ -1350,30 +1369,6 @@ function _render(vnode) {
 }
 ```
 
-#### 版本号排序
-
-```js
-arr.sort((a, b) => {
-    let i = 0;
-    const arr1 = a.split('.');
-    const arr2 = b.split('.');
-
-    while (true) {
-        const s1 = arr1[i];
-        const s2 = arr2[i++];
-
-        // 哪个长哪个大
-        if (s1 === undefined || s2 === undefined) {
-            return arr2.length - arr1.length;
-        }
-
-        if (s1 === s2) continue;
-
-        return s2 - s1;
-    }
-});
-```
-
 #### 实现sticky
 
 ##### offsetTop
@@ -1455,6 +1450,7 @@ const promiseList = [promise1,promise2,promise3]
 
 ---
 function promiseChain(tasks) {
+  // 执行器
   let promise = Promise.resolve()
 
   tasks.forEach(task => {
@@ -2172,4 +2168,105 @@ function parseParam(url) {
 
   return paramsObj;
 }
+```
+
+### CSS
+
+#### flex 纵向对齐
+
+如何使得divn靠右对齐而其他div靠左对齐
+```
+div.parent
+  div1
+  div2
+  div3
+  …
+  divn
+```
+
+改变主轴方向,**flex只能设置`align-self`, 而`justify-self`是无效的**
+
+```html
+<style>
+.container{
+    display:flex;
+    width:300px;
+    height: 900px;
+    background-color: bisque;
+
+    flex-direction: column;
+}
+div div {
+    border:blueviolet solid 2px;
+    height: 100px;
+    width: 200px;
+}
+
+div:last-child{
+    align-self: flex-end;
+}
+</style>
+
+<div class="container">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+</div>
+```
+
+#### 2
+
+设置一个div阴影并且当鼠标移上去2s之后改变样式
+
+```html
+<style lang="less">
+  .container{
+      display:flex;
+      width:300px;
+      height: 300px;
+      background-color: bisque;
+
+      flex-direction: column;
+  }
+  .shadow {
+      box-shadow: 2px 2px 5px;
+  }
+  </style>
+
+<script>
+  const div = document.querySelector('.container');
+  div.addEventListener('mouseenter', () => {
+      setTimeout(() => {
+          // 这两种方法不行 因为Attribute是元素的直接属性
+          // 相当于style的层级，而这里要改的是style的子属性
+          // div.removeAttribute('background-color')
+          // div.setAttribute('background-color', 'red')
+
+          // 这两种也不行 是修改行内样式
+          // div.setAttribute('style', '')
+          // div.style.boxShaow = '0 0 0'
+
+          // 修改类
+          div.classList.remove('shadow');
+      }, 500);
+  })
+</script>
+```        
+
+或者直接用js设置行内样式
+```js
+const div = document.querySelector('.container');
+// js设置行内样式
+div.setAttribute('style','box-shadow: 2px 2px 5px')
+// 或者 注意'2px 2px 5px'前面不能有空格
+// div.style.boxShadow = '2px 2px 5px';
+div.addEventListener('mouseenter', () => {
+    setTimeout(() => {
+        div.removeAttribute('style')
+        // 或者
+      //  div.style.boxShadow = ''
+    }, 500);
+})
 ```

@@ -172,6 +172,7 @@ https://github.com/WindrunnerMax/EveryDay/blob/master/CSS/%E5%93%8D%E5%BA%94%E5%
 * document.body.scrollTop || document.documentElement.* scrollTop 是浏览器滚动的过的距离；
 * imgs.offsetTop 是元素顶部距离文档顶部的高度（包括滚动条的距离）；
 * 内容达到显示区域的：img.offsetTop < window.innerHeight + document.body.scrollTop;
+  
 ![](image/2021-06-26-16-54-12.png)
 
 ### 7. Flex
