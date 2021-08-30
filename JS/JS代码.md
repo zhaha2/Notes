@@ -23,12 +23,15 @@ class Scheduler {
   }
   add(promiseCreator) {
     this.queue.push(promiseCreator);
+    this.request();
   }
-  taskStart() {
-    for (let i = 0; i < this.maxCount; i++) {
-      this.request();
-    }
-  }
+  // 题目没要求用taskStart启动
+  // taskStart() {
+  //   for (let i = 0; i < this.maxCount; i++) {
+  //     this.request();
+  //   }
+  // }
+  // 每次从队列中取出Promise Generator并执行
   request() {
     if (!this.queue || !this.queue.length || this.runCounts >= this.maxCount) {
       return;
@@ -57,7 +60,7 @@ addTask(1000, '1');
 addTask(500, '2');
 addTask(300, '3');
 addTask(400, '4');
-scheduler.taskStart()
+// scheduler.taskStart()
 // 2
 // 3
 // 1
@@ -947,6 +950,27 @@ function flatten(arr) {
 }
 ```
 
+##### 指定深度
+
+```js
+  function flatten(arr, dep) {
+    let result = [];
+
+    for (const i of arr) {
+      if (Array.isArray(i) && dep > 0) {
+        result = result.concat(flatten(i, dep - 1))
+      } else {
+        result.push(i)
+      }
+    }
+
+    return result;
+  }
+
+  const arr = [1, [2, 3, [4, 5, 6]], 7]
+  console.log(flatten(arr, 1))     // [1, 2, 3, [4,5,6], 7]
+```
+
 #### 数组去重
 
 ##### Set or Map
@@ -1279,6 +1303,22 @@ Array.from(imgs).forEach(item => observer.observe(item)) // 调用
 >[IntersectionObserver实现懒加载](https://hxy1997.xyz/2021/04/01/IntersectionObserver%E5%AE%9E%E7%8E%B0%E6%87%92%E5%8A%A0%E8%BD%BD/)
 >http://www.ruanyifeng.com/blog/2016/11/intersectionobserver_api.html
 
+#### 滚动加载
+
+```js
+window.addEventListener('scroll', function() {
+  const clientHeight = document.documentElement.clientHeight;
+  const scrollTop = document.documentElement.scrollTop;
+  // Element.scrollHeight 这个只读属性是一个元素内容高度的度量，
+  // 包括由于溢出导致的视图中不可见内容。 即文档总高度
+  const scrollHeight = document.documentElement.scrollHeight;
+  if (clientHeight + scrollTop >= scrollHeight) {
+    // 检测到滚动至页面底部，进行后续操作
+    // ...
+  }
+}, false);
+```
+
 #### 渲染几万条数据不卡住页面
 渲染大数据时，合理使用createDocumentFragment和requestAnimationFrame，将操作切分为一小段一小段执行。
 
@@ -1323,6 +1363,7 @@ function setRem(){
     let doc=document.documentElement;
     let width=doc.getBoundingClientRect().width;
     let rem=width/10
+    // 别忘了加px
     doc.style.fontsize=rem+'px';
 
     // or
@@ -1369,11 +1410,19 @@ function _render(vnode) {
 }
 ```
 
+#### 打印出当前网页使用了多少种HTML元素
+```js
+const fn = () => {
+  return [...new Set([...document.querySelectorAll('*')]
+          .map(el => el.tagName))].length;
+}
+```
+
 #### 实现sticky
 
 ##### offsetTop
 
-我们知道 offsetTop 是相对定位父级的偏移量，倘若需要滚动吸顶的元素出现定位父级元素，那么 offsetTop 获取的就不是元素距离页面顶部的距离。
+我们知道 offsetTop 是相对**定位父级**（类似于absolute定位？）的偏移量，倘若需要滚动吸顶的元素出现定位父级元素，那么 offsetTop 获取的就不是元素距离页面顶部的距离。
 
 我们可以自己对 offsetTop 做以下处理：
 
@@ -1598,7 +1647,6 @@ sub.notify('I changed !')
 >[「中高级前端面试」手写代码合集(二)](https://juejin.cn/post/6904079136299024398/#heading-3)
 >[从一道面试题简单谈谈发布订阅和观察者模式](https://juejin.cn/post/6844904018964119566#heading-0)
 
-**补充**：once
 
 ```js
 class EventEmitter {
@@ -1628,6 +1676,16 @@ class EventEmitter {
                 cb(...args)
             })
         }
+    }
+
+     once(event,callback){ //为事件注册单次监听器
+        // 包装后的回调函数
+        let wrapFanc = (...args) => {
+            callback.apply(this, args)
+            this.off(event,wrapFanc)
+        }
+        this.on(event,wrapFanc)
+        return this
     }
 
     // // 消息退订 可替换下面的off
@@ -1980,10 +2038,9 @@ var f = function(s) {
     return s.replace(/-\w/g, function(x) {
         // 这里匹配到的x是 -w这样的
         return x[1].toUpperCase();
-        // 或者 组匹配
-        // return s.replace(/-(\w)/g, (match,key)=>key.toUpperCase())
-
     })
+    // 或者 组匹配
+     // return s.replace(/-(\w)/g, (match,key)=>key.toUpperCase())
 }
 ```
 
