@@ -614,7 +614,9 @@ https://www.cxyzjd.com/article/woshidamimi0/84837727
    计算属性是基于它们的依赖进行缓存的。**只在相关依赖发生改变时它们才会重新求值**。
 2. watch是一个侦听的动作，用来观察和响应 Vue 实例上的数据变动。
 
-computed主要用于对同步数据的处理，watch则主要用于观测某个值的变化去完成一段开销较大的复杂业务逻辑
+computed主要用于对同步数据的处理，watch则主要用于观测某个值的变化去完成一段开销较大的或者异步的复杂业务逻辑
+
+>见 https://www.yuque.com/cuggz/interview/hswu8g#d72e59d5f3d78b8cf5d8038e0e12803e
 
 >源码 [我想用大白话讲清楚watch和computed](https://juejin.cn/post/6924911113012248590) Watcher
 
