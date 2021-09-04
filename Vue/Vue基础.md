@@ -38,7 +38,7 @@ https://www.yuque.com/cuggz/interview/hswu8g#8d6cd1d13b8d85c0090dd20084f39044
 
 Vue响应式底层实现方法是 Object.defineProperty() 方法，该方法中存在一个getter和setter的可选项，可以对属性值的获取和设置造成影响
 
-从                                        3232 当你把一个普通的 JavaScript 对象传入 Vue 实例作为 data 选项，Vue 将遍历此对象所有的 property，并使用 Object.defineProperty 把这些 property 全部转为 getter/setter。
+当你把一个普通的 JavaScript 对象传入 Vue 实例作为 data 选项，Vue 将遍历此对象所有的 property，并使用 Object.defineProperty 把这些 property 全部转为 getter/setter。
 
 - 这些 getter/setter 对用户来说是不可见的，但是在内部它们让 Vue 能够追踪依赖，在 property 被访问和修改时通知变更。
 
@@ -47,7 +47,7 @@ Vue响应式底层实现方法是 Object.defineProperty() 方法，该方法中�
 >作者：Jieunsi
 链接：https://www.nowcoder.com/discuss/670720?type=0&order=0&pos=13&page=1&ncTraceId=&channel=-1&source_id=discuss_tag_nctrack
 
->[Vue2.0 源码阅读：响应式原理](http://zhouweicsu.github.io/blog/2017/03/07/vue-2-0-reactivity/)
+>[Vue2.0 源码阅读：响应式原理](http://zhouweicsu.github.io/blog/2017/03/07/vue-2-0-reactivity/) 注释多
 
 #### vm.$set 的实现原理
 
@@ -55,7 +55,54 @@ Vue响应式底层实现方法是 Object.defineProperty() 方法，该方法中�
 - 如果目标是对象，会先判读属性是否存在、对象是否是响应式，最终如果要对属性进行响应式处理，则是通过调用 defineReactive 方法进行响应式处理
 
 #### 为什么3.0用proxy取代Object.defineProperty
-https://www.jianshu.com/p/860418f0785c
+
+- Proxy可以直接监听对象而非属性（Proxy返回的是一个新对象,我们可以只操作新的对象达到目的,而Object.defineProperty只能遍历对象属性直接修改。）
+  defineProperty只能对当前对象的**其中一个属性**进行劫持
+- Proxy可以直接监听数组的变化
+
+
+
+```js
+const p = new Proxy({
+    a: 1,
+    b: 2,
+}, {
+    get: function(obj, value) {
+        console.log('get', obj, value);
+        return Reflect.get(obj, value);
+    },
+    set: function(obj, prop, value) {
+        console.log('set', obj, prop, value);
+        return Reflect.set(obj, prop, value);
+    },
+})
+
+---
+const a = new Proxy([1,2], {
+    get: function(obj, prop) {
+        console.log('get', obj, prop);
+        return Reflect.get(obj, prop);
+    },
+    set: function(obj, prop, value) {
+        console.log('set', obj, prop, value);
+        return Reflect.set(obj, prop, value);
+    },
+});
+a.push(1);
+
+get [1,2] push
+get [1,2] length
+set [1,2] 2 1
+set [1,2, 1] length 3
+```
+
+---
+proxy本身也不能深度监听对象，**也要递归监听子对象**。但他可以监听整个对象，新增属性可以监听到。
+
+>Proxy本身就可以察觉到新增属性和对数组的原生方法的调用，所以无需额外的代码就可以实现响应式。但是对于深度监听（也就是嵌套对象的监听），我们是在 get 方法里递归调用了 reactive 方法。这里需要强调的是，和vue2使用Object.defineProperty不同，Object.defineProperty是在一上来遍历整个数据结构来实现深度监听，这里用Proxy是在get的时候（访问属性时）才动态的去深度监听，所以Proxy在深度监听性能更好
+
+
+>[面试官: 实现双向绑定Proxy比defineproperty优劣如何?](https://juejin.cn/post/6844903601416978439#heading-13)
 
 #### 依赖收集
 
@@ -224,14 +271,14 @@ console.log(arr);
 
 ​ 虚拟 DOM 就是为了解决浏览器性能问题而被设计出来的。如前，若一次操作中有 10 次更新 DOM 的动作，虚拟 DOM 不会立即操作 DOM，而是将这 10 次更新的 diff 内容保存到本地一个 JS 对象中，最终将这个 JS 对象一次性 attch 到 DOM 树上，再进行后续操作，避免大量无谓的计算量。所以，用 JS 对象模拟 DOM 节点的好处是，**页面的更新可以先全部反映在 JS 对象**(虚拟 DOM )上，**操作内存中的 JS 对象的速度显然要更快**，等更新完成后，再将最终的 JS 对象映射成真实的 DOM，交由浏览器去绘制。
 
+每个DOM上的属性多达 228 个，而这些属性有 90% 多对我们来说都是无用的。VNode 就是简化版的真实 DOM 元素，保留了我们要的属性，并新增了一些在 diff 过程中需要使用的属性，例如 isStatic。（Virtual DOM 就是一个js对象，用它来更轻量地描述DOM）
+
 #### 为什么要有虚拟 DOM
 在以前还没有框架的时候，前端开发几乎都是靠原生 JavaScript 或者是 JQuery 一把梭进行 DOM 操作的。那么为什么 React 和 Vue 都采用了虚拟 DOM 呢？我理解的虚拟 DOM 的优势是：
 
 - 跨平台渲染。借助虚拟 DOM 后 FrontEnd 可以进行移动端、小程序等开发。因为虚拟 DOM 本身只是一个 JavaScript 对象，所以可以先由 FE 们写 UI 并抽象成一个虚拟 DOM，再由安卓、IOS、小程序等原生实现根据虚拟 DOM 去渲染页面（React Native、Weex）。
 
 - 函数式的 UI 编程。将 UI 抽象成对象的形式，相当于可以以编写 JavaScript 的形式来写 UI。
-
-- 网上 Blog 常常会说到虚拟 DOM 会有更好的性能，因为虚拟 DOM 只会在 Diff 后修改一次真实 DOM，所以不会有大量的重排重绘消耗。并且只更新有变动的部分节点，而非更新整个视图。但我对这句话是存疑的，通过下文的 Diff 算法源码可以发现，Vue2 它的 Diff 是每次比对到匹配到的节点后就去修改真实 DOM 的，并不是等所有 Diff 完后再修改一次真实 DOM 而已。
 
 #### 虚拟 DOM 一定会更快吗
 我的理解是不一定。如果一个页面的**整个 DOM 结构都改变了的话**，使用虚拟 DOM 不仅一样要绘制渲染整个视图，而且还要进行 Diff 算法，会比直接操作真实 DOM 更慢，所以虚拟 DOM 带来的性能优势并不是绝对的。
@@ -242,9 +289,9 @@ console.log(arr);
 虚拟DOM的优劣如何?
 优点:
 
-保证性能下限: 虚拟DOM可以经过diff找出最小差异,然后批量进行patch,这种操作虽然比不上手动优化,但是比起粗暴的DOM操作性能要好很多,因此虚拟DOM可以保证性能下限
-无需手动操作DOM: 虚拟DOM的diff和patch都是在一次更新中自动进行的,我们无需手动操作DOM,极大提高开发效率
-跨平台: 虚拟DOM本质上是JavaScript对象,而DOM与平台强相关,相比之下虚拟DOM可以进行更方便地跨平台操作,例如服务器渲染、移动端开发等等
+- 保证性能下限: 虚拟DOM可以经过diff找出最小差异,然后**批量进行patch**,这种操作虽然比不上手动优化,但是比起粗暴的DOM操作性能要好很多,因此虚拟DOM可以保证性能下限
+- 无需手动操作DOM: 虚拟DOM的diff和patch都是在一次更新中自动进行的,我们无需手动操作DOM,极大提高开发效率
+- 跨平台: 虚拟DOM本质上是JavaScript对象,而DOM与平台强相关,相比之下虚拟DOM可以进行更方便地跨平台操作,例如服务器渲染、移动端开发等等
 
 缺点:
 
@@ -301,7 +348,7 @@ Vue 2.X进行diff时，调用patch打补丁函数，**一边比较一边给真�
 
 >看 http://blog.dangosky.com/2020/05/07/Vue2-%E7%9A%84-Diff-%E7%AE%97%E6%B3%95/#!
 
->https://github.com/fengshi123/blog/blob/master/articles/%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%9AVue%E6%A0%B8%E5%BF%83%E4%B9%8B%E8%99%9A%E6%8B%9FDOM.md
+>https://github.com/fengshi123/blog/blob/master/articles/%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%9AVue%E6%A0%B8%E5%BF%83%E4%B9%8B%E8%99%9A%E6%8B%9FDOM.md 看diff例子
 
 
 #### key
@@ -331,6 +378,14 @@ index 永远都是连续的，比如删除一个元素，他后面的所有index
 
 ---
 新旧 children 中的节点只有顺序是不同的时候，最佳的操作应该是通过移动元素的位置来达到更新的目的，key是children中节点的唯一标识，以便能够在旧 children 的节点中找到可复用的节点。
+
+---
+**key应该用什么数据类型**
+
+官网上说要用字符串或数字
+
+源码中：
+![](image/2021-09-04-15-35-13.png)
 
 #### 异步更新与nextTick
 
@@ -382,9 +437,11 @@ export default {
 ---
 实际上nextTick就是一个异步方法，也许和你使用的setTimeout没有太大的区别。
 
-总结就是Promise > MutationObserver > setImmediate > setTimeout。
+<!-- 总结就是Promise > MutationObserver > setImmediate > setTimeout。 -->
 
-再总结一下优先级：**microtask (jobs) 优先**。
+对于 macro task 的实现，优先检测是否支持原生 setImmediate，这是一个高版本 IE 和 Edge 才支持的特性，不支持的话再去检测是否支持原生的 MessageChannel，如果也不支持的话就会降级为 setTimeout 0；而对于 micro task 的实现，则检测浏览器是否原生支持 Promise，不支持的话直接指向 macro task 的实现。
+
+再总结一下优先级：microtask (jobs) 优先。
 
 因为在执行微任务之后还会执行渲染操作
 
@@ -654,6 +711,7 @@ render(_ctx, _cache, $props, $setup, $data, $options) {
 
 1. computed是计算属性，类似于过滤器,对绑定到视图的数据进行处理,并监听变化进而执行对应的方法
    计算属性是基于它们的依赖进行缓存的。**只在相关依赖发生改变时它们才会重新求值**。
+  **下一次获取** computed 的值时才会重新计算 computed 的值 (懒计算，不会以改变就立即计算新值，而是下次get时再计算)。
 2. watch是一个侦听的动作，用来观察和响应 Vue 实例上的数据变动。
 
 computed主要用于对同步数据的处理，watch则主要用于观测某个值的变化去完成一段开销较大的或者异步的复杂业务逻辑
