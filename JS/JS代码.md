@@ -807,6 +807,44 @@ class Cash {
 }
 ```
 
+#### (a == 1 && a == 2 && a == 3)
+
+```js
+if(a == 1 && a == 2 && a == 3){
+    console.log('succeed')
+}
+```
+
+1. valueOf隐式转换
+```js
+const a = (function() {
+    let i = 1;
+    return {
+        valueOf: function() {
+            return i++;
+        }
+    }
+})();
+
+console.log(a == 1 && a == 2 && a == 3); // true
+```
+
+2. 定义一个全局的属性,用defineProperty
+```js
+let i = 1;
+
+// 坑 注意是defineProperty不是defineProperties
+// 坑 ！！注意a 要用字符串形式 'a'
+Object.defineProperty(this, 'a' , {
+  get() {
+    return i++;
+  }
+})
+
+console.log(a == 1 && a == 2 && a == 3); // true
+```
+
+
 ### 数组方法
 
 #### map
@@ -1417,6 +1455,47 @@ const fn = () => {
           .map(el => el.tagName))].length;
 }
 ```
+
+#### 跨浏览器tab页通信
+
+##### window.open + postMessage （也要同源，不然子页面window.opener的值为null）(postMessage本身是不限制同源的)
+
+```js
+// 父页面
+window.addEventListener('message', function(e) {
+  console.log(e.data);
+},false);
+
+let child = window.open('/','c')
+child.postMessage('Hello World!','*')
+
+// 子页面
+window.addEventListener('message', function(e) {
+  console.log(e.data);
+},false);
+
+window.opener.postMessage('Nice to see you', '*');
+```
+
+##### LocalStorage（两个同源页面）
+```js
+// 页面1
+window.addEventListener('storage', function (e) {
+    console.log(e.newValue);
+    console.log(e.key);
+});
+
+// 页面2
+// 注意：localStorage要存JSON格式的数据
+window.localStorage.setItem('key', JSON.stringify('value'));
+```
+
+##### Shared Worker
+
+##### 非同源页面之间的通信
+**iframe + postMessage**
+
+**WebSocket**
 
 #### 实现sticky
 
@@ -2271,6 +2350,12 @@ div:last-child{
     <div></div>
     <div></div>
 </div>
+```
+
+**flex 横向 最后一个靠右**
+```css
+/* 最后一项加上 */
+margin-left: auto;
 ```
 
 #### 2

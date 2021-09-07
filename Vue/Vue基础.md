@@ -267,6 +267,8 @@ console.log(arr);
 
 ![](image/2021-08-01-14-57-38.png)
 
+[虚拟DOM的实现原理和优劣对比](https://blog.csdn.net/WU5229485/article/details/103685353)
+
 #### 虚拟 DOM 的好处
 
 ​ 虚拟 DOM 就是为了解决浏览器性能问题而被设计出来的。如前，若一次操作中有 10 次更新 DOM 的动作，虚拟 DOM 不会立即操作 DOM，而是将这 10 次更新的 diff 内容保存到本地一个 JS 对象中，最终将这个 JS 对象一次性 attch 到 DOM 树上，再进行后续操作，避免大量无谓的计算量。所以，用 JS 对象模拟 DOM 节点的好处是，**页面的更新可以先全部反映在 JS 对象**(虚拟 DOM )上，**操作内存中的 JS 对象的速度显然要更快**，等更新完成后，再将最终的 JS 对象映射成真实的 DOM，交由浏览器去绘制。
@@ -389,6 +391,16 @@ index 永远都是连续的，比如删除一个元素，他后面的所有index
 
 #### 异步更新与nextTick
 
+>看 [全面解析Vue.nextTick实现原理](https://juejin.cn/post/6844903590293684231#heading-0)
+
+- vue用异步队列的方式来控制DOM更新和nextTick回调先后执行
+        
+- microtask因为其高优先级特性，能确保队列中的微任务在一次事件循环前被执行完毕
+
+- 因为兼容性问题，vue不得不做了microtask向macrotask的降级方案
+
+---
+
 nextTick 可以让我们在下次 DOM 更新循环结束之后执行延迟回调，用于获得更新后的 DOM。在修改数据之后立即使用这个方法，获取更新后的 DOM。
 
 只要观察到数据变化，Vue 将开启一个队列，并缓冲在同一事件循环中发生的所有数据改变。如果同一个 watcher 被多次触发，只会被推入到队列中一次。这种在缓冲时去除重复数据对于避免不必要的计算和 DOM 操作上非常重要。
@@ -439,9 +451,11 @@ export default {
 
 <!-- 总结就是Promise > MutationObserver > setImmediate > setTimeout。 -->
 
-对于 macro task 的实现，优先检测是否支持原生 setImmediate，这是一个高版本 IE 和 Edge 才支持的特性，不支持的话再去检测是否支持原生的 MessageChannel，如果也不支持的话就会降级为 setTimeout 0；而对于 micro task 的实现，则检测浏览器是否原生支持 Promise，不支持的话直接指向 macro task 的实现。
+对于 macro task 的实现，优先检测是否支持原生 setImmediate，这是一个高版本 IE 和 Edge 才支持的特性，不支持的话再去检测是否支持原生的 MessageChannel，如果也不支持的话就会降级为 setTimeout 0；而对于 micro task 的实现，则检测浏览器是否原生支持 Promise 或 MutationObserver，不支持的话直接指向 macro task 的实现。
 
-再总结一下优先级：microtask (jobs) 优先。
+总结就是Promise > MutationObserver > setImmediate > setTimeout。
+
+再总结一下优先级：**microtask (jobs) 优先。**
 
 因为在执行微任务之后还会执行渲染操作
 
@@ -454,6 +468,9 @@ export default {
 
 >作者：青舟同学
 链接：https://juejin.cn/post/6844903918472790023
+
+>2.5版本改为宏任务优先，但是2.6版本改回去了
+![](image/2021-09-07-17-29-50.png)
 
 ---
 nextTick为什么总能拿到最新的DOM
@@ -482,7 +499,9 @@ Vue 实例有一个完整的生命周期，也就是从开始创建、初始化�
   生命周期执行mixin先于组件
   若组件和mixin的methods重名，则取组件的methods
 
-### 在v-model上怎么用Vuex中state的值？
+### v-model
+
+#### 在v-model上怎么用Vuex中state的值？
 需要通过computed计算属性来转换。
 
 ```js
@@ -500,10 +519,14 @@ computed: {
 }
 ```
 
+#### 自定义组件使用v-model
+
+[vue自定义组件实现 v-model双向绑定数据](https://juejin.cn/post/6967234522614071310)
+
 ### 你都做过哪些 Vue 的性能优化
 
 对象层级不要过深，否则性能就会差
-不需要响应式的数据不要放到 data 中（可以用 Object.freeze() 冻结数据）
+不需要响应式的数据不要放到 data 中（可以用 Object.freeze() 冻结数据； 或将数据放在vue实例外；或自定义option中）
 v-if 和 v-show 区分使用场景
 computed 和 watch 区分使用场景
 v-for 遍历必须加 key，key 最好是 id 值，且避免同时使用 v-if
@@ -518,6 +541,8 @@ v-for 遍历必须加 key，key 最好是 id 值，且避免同时使用 v-if
 
 >作者：Big shark@LX
 链接：https://juejin.cn/post/6961222829979697165
+
+>看 [总结我对Vue项目上线做的一些基本优化](https://juejin.cn/post/6850037281559543821)
 
 ### Object.freeze() 是“浅冻结”
 [Vue性能提升之Object.freeze()](https://juejin.cn/post/6844903922469961741#heading-6)
@@ -656,7 +681,24 @@ router为VueRouter实例，想要导航到不同URL，则使用router.push方法
 路由钩子函数有三种：
 1：全局钩子： beforeEach、 afterEach、beforeResolve
 2：单个路由里面的钩子：  beforeEnter
-3:组件路由：beforeRouteEnter、 beforeRouteUpdate、 beforeRouteLeave
+3: 组件路由：beforeRouteEnter、 beforeRouteUpdate、 beforeRouteLeave
+
+##### 完整的导航解析流程
+
+1. 导航被触发。
+2. 在失活的组件里调用 beforeRouteLeave 守卫。
+3. 调用全局的 beforeEach 守卫。
+4. 在重用的组件里调用 beforeRouteUpdate 守卫 (2.2+)。
+5. 在路由配置里调用 beforeEnter。
+6. 解析异步路由组件。
+7. 在被激活的组件里调用 beforeRouteEnter。
+8. 调用全局的 beforeResolve 守卫 (2.5+)。
+9. 导航被确认。
+10. 调用全局的 afterEach 钩子。
+11. 触发 DOM 更新。
+12. 调用 beforeRouteEnter 守卫中传给 next 的回调函数，创建好的组件实例会作为回调函数的参数传入。
+
+>https://router.vuejs.org/zh/guide/advanced/navigation-guards.html#%E7%BB%84%E4%BB%B6%E5%86%85%E7%9A%84%E5%AE%88%E5%8D%AB
 
 #### vue匹配不到路由跳转登录页或其他页面
 
@@ -740,3 +782,14 @@ Vue.js 是构建客户端应用程序的框架。默认情况下，可以在浏�
 
 >作者：我是你的超级英雄
 链接：https://juejin.cn/post/6844903918753808398
+
+--- 
+![](image/2021-09-05-11-29-03.png)
+>服务端渲染就是在浏览器请求页面URL的时候，服务端将我们需要的HTML文本组装好，并返回给浏览器，这个HTML文本被浏览器解析之后，不需要经过 JavaScript 脚本的执行，即可直接构建出希望的 DOM 树并展示到页面中。这个服务端组装HTML的过程，叫做服务端渲染。
+
+随着单页应用（SPA）的发展，程序员们渐渐发现 SEO（Search Engine Optimazition，即搜索引擎优化）出了问题，而且随着应用的复杂化，JavaScript 脚本也不断的臃肿起来，使得首屏渲染相比于 Web1.0时候的服务端渲染，也慢了不少。
+
+自己选的路，跪着也要走下去。于是前端团队选择了使用 nodejs 在服务器进行页面的渲染，进而再次出现了服务端渲染。大体流程与客户端渲染有些相似，首先是浏览器请求URL，前端服务器接收到URL请求之后，根据不同的URL，前端服务器向后端服务器请求数据，请求完成后，前端服务器会组装一个携带了具体数据的HTML文本，并且返回给浏览器，浏览器得到HTML之后开始渲染页面，同时，浏览器加载并执行 JavaScript 脚本，给页面上的元素绑定事件，让页面变得可交互，当用户与浏览器页面进行交互，如跳转到下一个页面时，浏览器会执行 JavaScript 脚本，向后端服务器请求数据，获取完数据之后再次执行 JavaScript 代码动态渲染页面。
+![](image/2021-09-05-11-32-22.png)
+
+>https://github.com/yacan8/blog/issues/30

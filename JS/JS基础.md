@@ -496,6 +496,53 @@ for (let value of myArray) {
 ![](image/2021-07-06-14-43-53.png)
 >https://segmentfault.com/a/1190000039142445
 
+##### 对象属性的顺序问题
+
+```js
+var obj = {
+  '-1': '全部',
+  '0' : '正常',
+  '1' : '失效'
+};
+
+for (let key in obj) {
+   console.log(key, obj[key]);
+};
+
+Object.keys(obj)    //['0', '1', '-1']
+
+// 0 正常
+// 1 失效
+// -1 全部
+```
+
+Object的key的排序规则:
+
+- 如果key是整数（如：123）或者整数类型的字符串（如：“123”），那么会按照从小到大的排序。
+- 除此之外，其它数据类型，都按照对象key的实际创建顺序排序。
+
+另外，如果key中除了整数或者整数类型的字符串外，还含有其它数据类型，则整数放在最前面，比如：
+
+```js
+var obj = {
+  'a': 111,
+  '我' : 222,
+  '1' : 333,
+  '1.3': 444,
+  '3': 555
+
+for (let key in obj) {
+   console.log(key, obj[key]);
+};
+
+// 1 333
+// 3 555
+// a 111
+// 我 222
+// 1.3 444
+```
+
+
 ### 6. AJAX
 AJAX是 Asynchronous JavaScript and XML 的缩写，指的是通过 JavaScript 的 异步通信，从服务器获取 XML 文档从中提取数据，再更新当前网页的对应部分，而不用刷新整个网页。
 
