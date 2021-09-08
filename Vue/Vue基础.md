@@ -762,6 +762,38 @@ computed主要用于对同步数据的处理，watch则主要用于观测某个�
 
 >源码 [我想用大白话讲清楚watch和computed](https://juejin.cn/post/6924911113012248590) Watcher
 
+### keep-alive 原理
+
+#### 组件实现原理
+
+keep-alive 组件是抽象组件，在对应父子关系时会跳过抽象组件，它只对包裹的子组件做处理，主要是根据LRU策略缓存组件 VNode，最后在 render 时返回子组件的 VNode。
+
+>在初始化阶段会调用 initLifecycle，里面判断父级是否为抽象组件，如果是抽象组件，就选取抽象组件的上一级作为父级，忽略与抽象组件和子组件之间的层级关系。
+
+keep-alive 组件没有编写 template 模板，而是由 render 函数决定渲染结果。
+
+如果 keep-alive 存在多个子元素，keep-alive **要求同时只有一个子元素被渲染**。所以在开头会获取插槽内的子元素，调用 getFirstComponentChild 获取到第一个子元素的 VNode。
+
+- 第一步：获取keep-alive包裹着的第一个子组件对象及其组件名；
+- 第二步：根据设定的黑白名单（include与exclude）进行条件匹配，决定是否缓存。不匹配，直接返回组件实例（VNode），否则执行第三步；
+- 第三步：根据组件ID和tag生成缓存Key，并在缓存对象中查找是否已缓存过该组件实例。如果存在，直接取出缓存值并更新该key在this.keys中的位置（更新key的位置是实现LRU置换策略的关键），否则执行第四步；
+- 第四步：在this.cache对象中存储该组件实例并保存key值，之后检查缓存的实例数量是否超过max的设置值，超过则根据LRU置换策略删除最近最久未使用的实例（即是下标为0的那个key）。
+- 第五步：最后并且很重要，将该组件实例的keepAlive属性值设置为true, 表示它是被缓存的组件。
+- keep-alive 在 mounted 会监听 include 和 exclude 的变化，属性发生改变时调整缓存和 keys 的顺序，最终调用的也是 pruneCacheEntry。
+
+#### 组件渲染流程
+
+Vue在初始化生命周期的时候，为组件实例建立父子关系会根据abstract属性决定是否忽略某个组件。在keep-alive中，设置了abstract: true，那Vue就会跳过该组件实例。
+最后构建的组件树中就不会包含keep-alive组件，那么由组件树渲染成的DOM树自然也不会有keep-alive相关的节点了。
+
+---
+被缓存的组件实例会为其设置keepAlive = true，而在初始化组件钩子函数中, 当vnode.componentInstance（这个值第一次实例的时候为undefined，所以第一次还是会走生命周期函数）和keepAlive同时为 true 时，不再进入$mount过程，那mounted之前的所有钩子函数（beforeCreate、created、mounted）都不再执行。
+
+在patch的阶段，最后会执行invokeInsertHook函数，而这个函数就是去调用组件实例（VNode）自身的insert钩子：
+在这个钩子里面，调用了activateChildComponent函数递归地去执行所有子组件的activated钩子函数：
+
+>[彻底揭秘keep-alive原理](https://juejin.cn/post/6844903837770203144#heading-6)
+[Vue源码解析，keep-alive是如何实现缓存的？](https://juejin.cn/post/6862206197877964807#heading-4)
 ### Vue SSR
 
 Vue.js 是构建客户端应用程序的框架。默认情况下，可以在浏览器中输出 Vue 组件，进行生成 DOM 和操作 DOM。然而，也可以将同一个组件渲染为服务端的 HTML 字符串，将它们直接发送到浏览器，最后将这些静态标记"激活"为客户端上完全可交互的应用程序。
