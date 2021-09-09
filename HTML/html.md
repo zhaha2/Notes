@@ -581,6 +581,22 @@ res.setHeader('Set-Cookie', 'name=xxx;');
 document.cookie = 'name=xxx;';
 ```
 
+###### token (补充)
+
+当用户发送请求，将用户信息带给服务器的时候，服务器不再像过去一样存储在 session 中，而是将浏览器发来的内容通过内部的密钥加上这些信息，使用 sha256 和 RSA 等加密算法生成一个 token 令牌和用户信息一起返回给浏览器，当涉及验证用户的所有请求只需要将这个 token 和用户信息发送给服务器，而服务器将用户信息和自己的密钥通过既定好的算法进行签名，然后将发来的签名和生成的签名比较，严格相等则说明用户信息没被篡改和伪造，验证通过。
+JWT 的过程中，服务器**不再需要额外的内存存储用户信息（Session）**，和多个服务器之间只需要共享密钥就可以让多个服务器都有验证能力，同时也解决了 **cookie 不能跨域**的问题。
+
+---
+JWT 认证流程：
+
+- 用户输入用户名/密码登录，服务端认证成功后，会返回给客户端一个 JWT(包含用户id 过期时间 权限等信息和签名)
+- 客户端将 token 保存到本地（通常使用 localstorage，也可以使用 cookie）
+- 当用户希望访问一个受保护的路由或者资源的时候，需要请求头的 Authorization 字段中使用Bearer 模式添加 JWT.
+
+
+>看 [JSON Web Token 入门教程](http://www.ruanyifeng.com/blog/2018/07/json_web_token-tutorial.html)
+https://juejin.cn/post/6844903682501246983
+https://juejin.cn/post/6844904034181070861#heading-25
 
 ###### 7.5.2.2 LocalStorage
 LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息较大，Cookie就不能满足我们的需求，这时候LocalStorage就派上用场了。
