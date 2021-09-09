@@ -292,6 +292,8 @@ window.onload = function(){
 ```
 他们的区别就是childNodes包括元素节点和文本节点，而**children只包括元素节点**。
 
+>**补充** 在HTML element內的text內容也是text node
+
 #### HTMLCollection和 NodeList
 共同点
 - 都是类数组对象，都有length属性
@@ -353,6 +355,26 @@ p[1].innerText
 3. 实际在用的过程中取决于要获取的是什么，再进行选择。
 
 4. get系列返回HTMLCollection，是动态的；而querySelector返回NodeLsit，是静态的。
+
+#### 创建带有id属性的DOM元素有什么副作用
+
+如果一个元素拥有ID属性,那么ID属性的属性值就会成为window对象的属性名.
+
+**带有id的DOM树元素会成为全局变量！**
+对于DOM树中具有ID的给定HTMLElement，可以使用其ID作为变量名来检索div。所以对于一个div
+
+```html
+<div id="example">some text</div>
+```
+在Internet Explorer 8和Chrome中，可以执行以下操作：
+```js
+alert(example.innerHTML); //=> 'some text'
+```
+要么
+```js
+alert(window['example'].innerHTML); //=> 'some text'
+```
+
 ### 4. 严格模式
 use strict 是一种 ECMAscript5 添加的（严格模式）运行模式，这种模式使得 Javascript 在更严格的条件下运行。设立严格模式的目的如下：
 - 消除 Javascript 语法的不合理、不严谨之处，减少怪异行为;
@@ -549,6 +571,7 @@ AJAX是 Asynchronous JavaScript and XML 的缩写，指的是通过 JavaScript �
 创建AJAX请求的步骤：
 - **创建一个 XMLHttpRequest 对象**。
 - 在这个对象上**使用 open 方法创建一个 HTTP 请求**，open 方法所需要的参数是请求的方法、请求的地址、是否异步和用户的认证信息。
+  >可以在open中拦截请求,onreadystatechange 中拦截相应
 - 在发起请求前，可以**为这个对象添加一些信息和监听函数**。比如说可以通过 setRequestHeader 方法来为请求添加头信息。还可以为这个对象添加一个状态监听函数。一个 XMLHttpRequest 对象一共有 5 个状态，当它的状态变化时会触发onreadystatechange 事件，可以通过设置监听函数，来处理请求成功后的结果。当对象的 readyState 变为 4 的时候，代表服务器返回的数据接收完成，这个时候可以通过判断请求的状态，如果状态是 2xx 或者 304 的话则代表返回正常。这个时候就可以通过 response 中的数据来对页面进行更新了。
 - 当对象的属性和监听函数设置完成后，最后**调用 sent 方法来向服务器发起请求**，可以传入参数作为发送的数据体。
 

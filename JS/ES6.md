@@ -102,6 +102,48 @@ const go = function*(){
 
 ### Class
 
+```js
+// 用纯函数重写 class User
+
+// 1. 创建构造器函数
+function User(name) {
+  this.name = name;
+}
+// 函数的原型（prototype）默认具有 "constructor" 属性，
+// 所以，我们不需要创建它
+
+// 2. 将方法添加到原型
+User.prototype.sayHi = function() {
+  alert(this.name);
+};
+
+// 用法：
+let user = new User("John");
+user.sayHi();
+```
+
+```js
+class User {
+  constructor(name) { this.name = name; }
+  sayHi() { alert(this.name); }
+}
+
+// class 是一个函数
+alert(typeof User); // function
+
+// ...或者，更确切地说，是 constructor 方法
+alert(User === User.prototype.constructor); // true
+
+// 方法在 User.prototype 中，例如：
+alert(User.prototype.sayHi); // alert(this.name);
+
+// 在原型中实际上有两个方法
+alert(Object.getOwnPropertyNames(User.prototype)); // constructor, sayHi
+
+User.prototype
+// {constructor: ƒ, sayHi: ƒ}
+```
+
 #### 静态方法
 类相当于实例的原型，所有在类中定义的方法，都会被实例继承。如果在一个方法前，加上static关键字，就表示**该方法不会被实例继承，而是直接通过类来调用**，这就称为“静态方法”。
 
@@ -197,19 +239,105 @@ Object.setPrototypeOf = function (obj, proto) {
 
 ####  ES5 和 ES6 继承的区别
 
-- ES5 的继承使用借助构造函数实现，实质是先创造子类的实例对象this，然后再将父类的方法添加到this上面。ES6 的继承机制完全不同，实质是先创造父类的实例对象this（所以必须先调用super方法），然后再用子类的构造函数修改this。
-- ES6 在继承的语法上不仅继承了类的原型对象，还继承了类的静态属性和静态方法
+ES5和ES6的继承有什么区别？
 
->作者：子弈
-链接：https://juejin.cn/post/6844904093425598471
-来源：掘金
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+MA:
+  1. ES5的继承一般是通过原型链模式或者构造函数模式来实现继承的，比如
+  ```js
+  // 原型链模式
+  function Parent () {}
+  function Sub () {}
+  Sub.prototype = new Parent()
+  Sub.constructor = Sub
+  var sub = new Sub();
+  Sub.__proto__ === Function.prototype
+  // 构造模式
+  function Parent () {}
+  function Sub () {
+     Parent.apply(this, arguments)
+  }
+  var sub = new Sub();
+  Sub.__proto__ === Function.prototype
+  ```
+  通过上面的举例，可以看到，ES5的的子构造函数的 `prototype` 指向的是 `Function.prototype`。
+  而 ES6 实现的继承，`Sub__proto__` 的会指向 `Parent`。
+  ```js
+  class Parent {}
+  class Sub extends Parent {
+    constructor(){
+      super()
+    }
+  }
+  
+  Sub.__proto__ === Parent
+  ```
+  
+  2. this 的构造顺序是不一样的，ES5 的继承是先构造子对象然后再产生父对象，然后将父对象里面的属性复制到子对象中。而 ES6 是先使用 `super()`创建父对象，然后再创建子对象。所以 this 的构造顺序不同。
+  3. ES6可以继承静态属性和类
+```js
+class P {
+constructor(p) {
+  this.p = p
+}
+  static pp = '???'
+}
 
----
+ class S extends P {
+   constructor(s) {
+     super(s)
+   }
+ }
+
+ let s = new S('name');
+ s.P;  //name
+ S.pp; //??? 注意是大S，是类的属性
+ ```
+  
+OA:
+
+1. ES5 和 ES6 子类 this 生成顺序不同。ES5 的继承先生成了子类实例，再调用父类的构造函数修饰子类实例，ES6 的继承先生成父类实例，再调用子类的构造函数修饰父类实例。这个差别使得 ES6 可以继承内置对象。
+```js
+function MyES5Array() {
+  Array.call(this, arguments);
+}
+
+// it's useless
+const arrayES5 = new MyES5Array(3); // arrayES5: MyES5Array {}
+
+class MyES6Array extends Array {}
+
+// it's ok
+const arrayES6 = new MyES6Array(3); // arrayES6: MyES6Array(3) []
+```
+
+2. 问题是继承的差异。
+```js
+class Super {}
+class Sub extends Super {}
+
+const sub = new Sub();
+
+Sub.__proto__ === Super;
+```
+子类可以直接通过 `__proto__` 寻址到父类。
+```js
+function Super() {}
+function Sub() {}
+
+Sub.prototype = new Super();
+Sub.prototype.constructor = Sub;
+
+var sub = new Sub();
+
+Sub.__proto__ === Function.prototype;
+```
+而通过 ES5 的方式，`Sub.__proto__ === Function.prototype`
+
+#### ES5 ES6类的区别
 ES6中的类只是ES5封装后的语法糖而已
 
-- 在ES5中类的原型对象的方法是可枚举的，但是ES6中不可枚举
-- 在ES5中如果不用new，this指向windows全局变量，在ES6如果不用new关键字则会报错处理
+- 在ES5中如果不用new，this指向windows全局变量，在ES6如果**不用new关键字则会报错处理**
+- 在ES5中类的原型对象的方法是可枚举的，但是**ES6中不可枚举**
 - ES6中的类是不会声明提升的, ES5可以
 - 在ES6中如果不写构造方法
 ```js
@@ -224,7 +352,9 @@ class Es6Person {
 - 在ES6中类的属性名可以采用表达式
 - ES6利用get和set关键字对某属性设置存值函数和取值函数拦截属性的存取行为和ES5一样。
 - 类的静态方法
+- 类总是使用 use strict。 在类构造中的所有代码都将自动进入严格模式。
 
+>看 https://zh.javascript.info/class
 
 ### Generator
 是ES6里面的新数据类型，像一个函数，可以返回多次。特点就是函数有个*号。返回一个遍历器(Iterator)对象。
