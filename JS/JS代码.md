@@ -575,12 +575,11 @@ console.log(obj2); //{a:1,b:{c:2}}
 
 1. JSON.stringify()
 - JSON.parse(JSON.stringify(obj))是目前比较常用的深拷贝方法之一，它的原理就是利用JSON.stringify 将js对象序列化（JSON字符串），再使用JSON.parse来反序列化(还原)js对象。
-- 这个方法可以简单粗暴的实现深拷贝，但是还存在问题，拷贝的对象中如果有**函数，undefined，symbol**，当使用过JSON.stringify()进行处理之后，都会消失。
-- 他无法实现对函数 、RegExp等特殊对象的克隆
+- 这个方法可以简单粗暴的实现深拷贝，但是还存在问题，拷贝的对象中如果有**函数，undefined，symbol, RegExp对象**，当使用过JSON.stringify()进行处理之后，都会消失。
 - 会**抛弃对象的constructor**,所有的构造函数会指向Object
 - 对象有**循环引用**,会报错
 
-2. 函数库lodash的_.cloneDeep方法
+1. 函数库lodash的_.cloneDeep方法
   ```js
   var _ = require('lodash');
   var obj1 = {
@@ -656,11 +655,13 @@ function deepClone( originObj, map = new WeakMap() ) {
     }
     //这个对象还没有被记录，将其引用记录在map中，进行拷贝    
     let result = Array.isArray(originObj) ? [] : {};  //拷贝结果
+    // 其实这种方式获取的数组的key也是字符串 而arr.'1'不能获取值会报错 要a['1']
     let keys = Object.keys(originObj); //originObj的全部key集合
 
     map.set(originObj, result); //记录引用关系, 在这个阶段就可以set了
     //拷贝
     for(let key of keys) {
+        // 用[]，针对数组的情况
         result[key] = deepClone(originObj[key], map);
     }
     return result;
@@ -873,6 +874,7 @@ Array.prototype.myMap = function(callback, context){
 
 #### reduce
 ```js
+// reduce回调不支持传this
 Array.prototype.myReduce = function(fn, initialValue) {
     // if (this === null || this === undefined) 
     // 	throw new TypeError(`Cannot read property 'reduce' of ${this}`)
@@ -882,13 +884,29 @@ Array.prototype.myReduce = function(fn, initialValue) {
 
   var arr = Array.prototype.slice.call(this);
   var res, startIndex;
-  res = initialValue ? initialValue : arr[0]; // 不传默认取数组第一项
-  startIndex = initialValue ? 0 : 1;
+  res = initialValue === undefined ? arr[0] : initialValue; // 不传默认取数组第一项
+  startIndex = initialValue === undefined ? 1 : 0;
   for(var i = startIndex; i < arr.length; i++) {
     // 把初始值、当前值、索引、当前数组返回去。调用的时候传到函数参数中 [1,2,3,4].reduce((initVal,curr,index,arr))
     res = fn.call(null, res, arr[i], i, this); 
   }
   return res;
+}
+```
+
+我的版本
+```js
+Array.prototype.myReduce = function(fn, initialValue) {
+  // If...
+  let arr = this;
+  let res = initialValue === undefined ? arr[0] : initialValue,
+      index = initialValue === undefined ? 1 : 0;
+
+  for (; index < arr.length; index++) {
+    res = fn.call(null,res,arr[index],index,arr)
+  }
+
+  return initialValue
 }
 ```
 
@@ -913,6 +931,8 @@ Array.prototype.myFilter=function(callback, context=window){
 
 #### 数组扁平化
 
+https://juejin.cn/post/6844904025993773063#heading-12
+
 ##### flat()
 
 直接调用 ES6 中的 flat 方法来实现数组扁平化。flat 方法的语法：`arr.flat([depth])`
@@ -929,8 +949,11 @@ let arr = [1, [2, [3, [4, 5]]], 6];
 function flatten(arr) {
   let str = JSON.stringify(arr);
   str = str.replace(/(\[|\])/g, '');
+
   str = '[' + str + ']';
   return JSON.parse(str); 
+  // 或者
+  // str.split(',')
 }
 console.log(flatten(arr)); //  [1, 2, 3, 4，5]
 ```
@@ -945,6 +968,8 @@ function flatten(arr) {
 }
 console.log(flatten(arr)); //  [1, 2, 3, 4，5]
 ```
+
+不推荐使用 toString + split 方法，因为操作字符串是和危险的事情（数组全是数字就没什么问题）
 
 ##### 扩展运算符
 ```js
@@ -979,6 +1004,7 @@ function flatten(arr) {
 
   for(let i = 0; i < arr.length; i++) {
     if(Array.isArray(arr[i])) {
+      // 注意这里不是push
       result = result.concat(flatten(arr[i]));
     } else {
       result.push(arr[i]);
@@ -1007,6 +1033,20 @@ function flatten(arr) {
 
   const arr = [1, [2, 3, [4, 5, 6]], 7]
   console.log(flatten(arr, 1))     // [1, 2, 3, [4,5,6], 7]
+```
+
+reduce
+```js
+// reduce + 递归
+function flat(arr, num = 1) {
+  return num > 0
+    ? arr.reduce(
+        (pre, cur) =>
+          pre.concat(Array.isArray(cur) ? flat(cur, num - 1) : cur),
+        []
+      )
+    : arr.slice();
+}
 ```
 
 #### 数组去重
@@ -1116,6 +1156,19 @@ const result = responseList.reduce((acc, cur) => {
     return ids.includes(cur.id) ? acc : [...acc, cur];
 }, []);
 console.log(result); // -> [ { id: 1, a: 1}, {id: 2, a: 2}, {id: 3, a: 3} ]
+```
+
+我的版本
+```js
+function unique(arr) {
+  const set = new Set();
+
+  return arr.filter((item)=>{
+    if (set.has(item.id)) return false;
+    set.add(item.id);
+    return true;
+  })
+}
 ```
 
 #### 随机打乱数组
@@ -1293,6 +1346,8 @@ function lazyLoad() {
     	if(imgs[i].offsetTop < scrollTop + viewHeight) {
       	    if(imgs[i].getAttribute("src") !== "default.jpg") continue;
       	    imgs[i].src = imgs[i].getAttribute("data-src")
+            // 或者
+            // img.src = img.dataset.src;
       	    count ++
     	}
     }
@@ -1458,7 +1513,10 @@ const fn = () => {
 
 #### 跨浏览器tab页通信
 
-##### window.open + postMessage （也要同源，不然子页面window.opener的值为null）(postMessage本身是不限制同源的)
+##### window.open + postMessage 
+
+postMessage本身是不限制同源的
+也可以用event.souce找到父窗口
 
 ```js
 // 父页面
@@ -1466,12 +1524,15 @@ window.addEventListener('message', function(e) {
   console.log(e.data);
 },false);
 
-let child = window.open('/','c')
+// target为新窗口打开 或者_blank也行
+let child = window.open('/','target')
 child.postMessage('Hello World!','*')
 
 // 子页面
 window.addEventListener('message', function(e) {
   console.log(e.data);
+  console.log(e.origin);
+  e.source.postMessage('Nice to see you', '*');
 },false);
 
 window.opener.postMessage('Nice to see you', '*');
@@ -1688,37 +1749,50 @@ lazyman.sleep(2).eat('meat').sleep(3).eat('apple').sleepAtFirst(70).eat('food')
 ![](image/2021-07-14-21-29-20.png)
 
 ```js
-class Subject {
-    constructor() {
-        this.observers = [] // 观察者队列
-    }
-    add(observer) { // 没有事件通道
-        this.observers.push(observer) // 必须将自己 observer 添加到观察者队列
-        // this.observers = [...new Set(this.observers)]
-    }
-    notify(...args) { // 亲自通知观察者
-        this.observers.forEach(observer => observer.update(...args))
-    }
-    remove(observer) {
-        let observers = this.observers
-    	for (let i=0, len=observers.length; i<len; i++) {
-            if (observers[i] === observer) observers.splice(i, 1)
+// Subject
+var Jack = {
+    subscribers: {
+        'any': []
+    },
+	//添加订阅
+    subscribe: function (type = 'any', fn) {
+        if (!this.subscribers[type]) {
+            this.subscribers[type] = [];
         }
+        this.subscribers[type].push(fn); //将订阅方法保存在数组里
+    },
+	//退订
+    unsubscribe: function (type = 'any', fn) {
+        this.subscribers[type] =
+            this.subscribers[type].filter(function (item) { 
+                return item !== fn;
+            }); //将退订的方法从数组中移除
+    },
+	//发布订阅
+    publish: function (type = 'any', ...args) {
+        this.subscribers[type].forEach(function (item) { 
+            item(...args);	//根据不同的类型调用相应的方法
+        });
     }
-}
+};
 
-class Observer {
-    update(...args) {
-    	console.log(...args)
+// Observer
+var Tom = {
+    readNews: function (info) {
+        console.log(info);
     }
-}
+};
 
-let observer_1 = new Observer() // 创建观察者1
-let observer_2 = new Observer()
-let sub = new Subject() // 创建目标对象
-sub.add(observer_1) // 添加观察者1
-sub.add(observer_2)
-sub.notify('I changed !')
+//Tom订阅Jack的报纸
+Jack.subscribe('娱乐', Tom.readNews);
+Jack.subscribe('体育', Tom.readNews);
+
+//Tom 退订娱乐新闻：
+Jack.unsubscribe('娱乐', Tom.readNews);
+
+//发布新报纸：
+Jack.publish('娱乐', 'S.H.E演唱会惊喜登台')
+Jack.publish('体育', '欧国联-意大利0-1客负葡萄牙');
 ```
 
 #### 发布订阅模式(实现一个Event类)

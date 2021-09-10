@@ -1472,11 +1472,15 @@ https://wangdoc.com/javascript/stdlib/regexp.html#%E7%BB%84%E5%8C%B9%E9%85%8D
 - 脱离 DOM 的引用：获取一个 DOM 元素的引用，而后面这个元素被删除，由于一直保留了对这个元素的引用，所以它也无法被回收。
 - 闭包：不合理的使用闭包，从而导致某些变量一直被留在内存当中。
 
+>https://segmentfault.com/a/1190000038816646?utm_source=sf-similar-article
+
 ### 堆和栈
 JavaScript引擎需要用栈来维护程序执行期间的上下文的状态，**如果栈空间大了的话**，所有数据都存放在栈空间里面，**会影响到上下文切换的效率**，进而影响整个程序的执行效率。
 >见 [V8内存管理及垃圾回收机制](https://mp.weixin.qq.com/s/_ZXIRaV1InOyMt3Xe5irDw)
 
 闭包中的变量们整体被放进一个对象存在堆中
+
+**数据结构中的堆：完全二叉树**
 > 见 [JS 变量存储？栈 & 堆？NONONO!](https://juejin.cn/post/6844903997615128583#heading-21)
 > [数据结构：堆（Heap）](https://www.jianshu.com/p/6b526aa481b1)
 > https://www.ruanyifeng.com/blog/2013/11/stack.html
