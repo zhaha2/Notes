@@ -1626,6 +1626,7 @@ window.addEventListener('scroll', this.handleScroll);
 const promise1 = ()=>Promise.resolve(1)
 const promise2 = ()=> new Promise(resolve=>{
   setTimeout(() => {
+    // 注意 回调再resolve
     resolve(2)
   }, 2000);
 })
@@ -1675,6 +1676,49 @@ async function promiseChain3(tasks) {
     await task()
   }
 }
+```
+
+#### 串行2
+只能用这个log函数，来实现升序打印0到100
+```js
+const log=(callback)=>{
+    log.count = log.count || 0;
+    var count = log.count++
+    setTimeout(()=>{
+        console.log(count)
+        callback && callback()
+    },Math.random()*1000%10)
+}
+```
+
+```js
+async function a() {
+  let p = Promise.resolve();
+
+  for (let i = 1; i <= 100; i++) {
+    p = p.then(()=>{
+      return new Promise((res, rej)=>{
+        // 注意 回调再resolve
+        // 不然就直接执行了
+        log(res);
+      })
+    })
+  }
+}
+
+a()
+```
+
+或者await
+```js
+async function a() {
+  for (let index = 0; index <= 100; index++) {
+    await new Promise((res)=>{
+      log(res)
+    }) 
+  }
+}
+a()
 ```
 
 #### lazy man

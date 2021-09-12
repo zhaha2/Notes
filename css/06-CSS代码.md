@@ -559,6 +559,20 @@ child{
 }
 ```
 
+#### img居中
+
+img是行内元素
+
+1. flex
+2. position
+3. text-align: center;
+4. 垂直居中：
+   `vertical-align:middle;`
+   或者
+   设line-height = height
+   应该能用但我试了不行
+5. img设为`display: block;`用块级居中 
+
 ### 4. 场景应用
 #### 4.1 画三角形
 CSS绘制三角形主要用到的是border属性，也就是边框。

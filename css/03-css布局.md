@@ -155,6 +155,9 @@ only运算符仅在整个查询匹配时才用于应用样式，并且对于防�
 
 关于兼容： 页面头部必须有mata声明的viewport。
 
+总结就是viewport+媒体查询
+>见 http://www.ruanyifeng.com/blog/2012/05/responsive_web_design.html
+
 >为何需要这个？因为移动端浏览器倾向于在它们的视口宽度上说谎。
 https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/Responsive_Design#%E8%A7%86%E5%8F%A3%E5%85%83%E6%A0%87%E7%AD%BE
 
@@ -244,7 +247,7 @@ BFC（Block Formatting Context）块级格式化上下文，是 Web 页面中盒
 * 内部的 Box 会在垂直方向上一个接一个的放置。
 * 垂直方向上的距离由 margin 决定（BFC内部外边距会发生折叠）
 * bfc 的区域不会与 float 的元素区域重叠。
-* 计算 bfc 的高度时，浮动元素也参与计算（解决高度塌陷）
+* 计算 bfc 的高度时，浮动元素也参与计算（解决高度塌陷(清除浮动)）
 * bfc 就是页面上的一个独立容器，容器里面的子元素不会影响外面元素。
 
 #### 8.3 BFC 作用

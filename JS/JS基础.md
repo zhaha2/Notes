@@ -375,6 +375,14 @@ alert(example.innerHTML); //=> 'some text'
 alert(window['example'].innerHTML); //=> 'some text'
 ```
 
+#### JS获取元素宽高
+
+dom元素.style.height/width 取得是元素**行内样式**的height值（如果没有行内样式则为空）
+
+getComputedStyle()方法获取计算后的宽高。这个方法取得值是内容content区域的值，与padding、margin和边框无关。
+
+>[原生JS获取元素宽高实践详解](https://juejin.cn/post/6844903687043727368#heading-4)
+
 ### 4. 严格模式
 use strict 是一种 ECMAscript5 添加的（严格模式）运行模式，这种模式使得 Javascript 在更严格的条件下运行。设立严格模式的目的如下：
 - 消除 Javascript 语法的不合理、不严谨之处，减少怪异行为;
@@ -1473,6 +1481,7 @@ https://wangdoc.com/javascript/stdlib/regexp.html#%E7%BB%84%E5%8C%B9%E9%85%8D
 - 闭包：不合理的使用闭包，从而导致某些变量一直被留在内存当中。
 
 >https://segmentfault.com/a/1190000038816646?utm_source=sf-similar-article
+[js 内存泄漏场景、如何监控以及分析](https://juejin.cn/post/6844904048961781774#heading-6) 内存泄漏的监控
 
 ### 堆和栈
 JavaScript引擎需要用栈来维护程序执行期间的上下文的状态，**如果栈空间大了的话**，所有数据都存放在栈空间里面，**会影响到上下文切换的效率**，进而影响整个程序的执行效率。

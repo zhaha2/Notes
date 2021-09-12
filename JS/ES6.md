@@ -544,3 +544,5 @@ Symbol 作为属性名，**遍历对象**的时候，该属性不会出现在for
 
 ### ES7~
 [ES6、ES7、ES8、ES9、ES10新特性一览](https://juejin.cn/post/6844903811622912014#heading-56)
+
+[JS语法 ES6、ES7、ES8、ES9、ES10、ES11、ES12新特性](https://segmentfault.com/a/1190000039272641)

@@ -42,6 +42,7 @@
 >见
 https://juejin.cn/post/6844904119157669902
 https://juejin.cn/post/6844904063641862151
+https://developer.mozilla.org/zh-CN/docs/Web/Performance/How_browsers_work
 
 ---
 假如，你的js代码在主线程中执行过程中，有对元素尺寸等的api操作（例如修改width），那么，js主线程中这个dom修改会将c++层中的dom对象上width属性改掉，且会"触发"c++对这片渲染树的reflow。
