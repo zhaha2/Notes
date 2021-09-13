@@ -68,7 +68,7 @@ flex, grid
 #### 2.2 display的 block、inline和 inline-block的区别
 
 1. block：会独占一行，多个元素会另起一行，可以设置width、height、margin和padding属性；
-2. inline：元素不会独占一行，设置width、height属性无效。但可以设置水平方向的margin和padding属性，不能设置垂直方向的padding和margin；
+2. inline：元素不会独占一行，设置width、height属性无效。但可以设置水平方向的margin和padding属性，**不能设置垂直方向的padding和margin**；
 3. inline-block：将对象设置为inline对象，但对象的内容作为block对象呈现，之后的内联对象会被排列在同一行内。
 
 #### 2.3 隐藏元素的方法有哪些
@@ -93,7 +93,7 @@ visibility:hidden不会让元素从渲染树中消失，渲染的元素还会占
 2. 是否是继承属性
 display:none是非继承属性，子孙节点会随着父节点从渲染树消失，通过修改子孙节点的属性也无法显示；
 visibility:hidden是继承属性，子孙节点消失是由于继承了hidden，通过设置visibility:visible可以让子孙节点显示；
-3. 修改常规文档流中元素的 display 通常会造成文档的重排（回流），但是修改visibility属性只会造成本元素的重绘；
+3. 修改常规文档流中元素的 display 通常会造成文档的**重排**（回流），但是修改visibility属性只会造成本元素的**重绘**；
 4. 如果使用读屏器，设置为display:none的内容不会被读取，设置为visibility:hidden的内容会被读取。
 5. visibility:hidden不会影响计数器计数（ol标签）
 ![](image/2021-06-26-14-26-19.png)
@@ -186,7 +186,11 @@ p{line-height:39px;} //26*1.5=39
 ### 5. 层叠上下文
 层叠上线文就是结界，其中的元素如果跟层叠上下文之外的元素发生层叠，就比较他们的层叠水平高低来显示。
 
-创建的方法：postion为relative、absolute、fixed的元素设置z-index
+创建的方法：
+- postion为relative、absolute、fixed的元素设置z-index
+- flex (flexbox) 容器的子元素，且 z-index 值不为 auto；
+- opacity 属性值小于 1 的元素；
+- 以下任意属性值不为 none 的元素：transform，filter，perspective，clip-path，mask / mask-image / mask-border；
 
 顺序是：底层的border、background，负值z-index，块级盒子，浮动盒子，内联盒子，z-index：auto, 正z-index
 
@@ -202,6 +206,8 @@ p{line-height:39px;} //26*1.5=39
 （7）正z-index：z-index属性值为正的定位元素。
 
 注意: 当定位元素z-index:auto，生成盒在当前层叠上下文中的层级为 0，不会建立新的层叠上下文，除非是根元素。
+
+>稍后 [深入理解CSS中的层叠上下文和层叠顺序](https://www.zhangxinxu.com/wordpress/2016/01/understand-css-stacking-context-order-z-index/)
 
 #### 5.1 z-index属性在什么情况下会失效
 通常 z-index 的使用是在有两个重叠的标签，在一定的情况下控制其中一个在另一个的上方或者下方出现。z-index值越大就越是在上层。z-index元素的position属性需要是relative，absolute或是fixed。
@@ -234,7 +240,7 @@ z-index 属性指定：
 2. 百分比（%），当浏览器的宽度或者高度发生变化时，通过百分比单位可以使得浏览器中的组件的宽和高随着浏览器的变化而变化，从而实现响应式的效果。一般认为子元素的百分比相对于直接父元素。 
 * 子元素的height或width中使用百分比，是相对于子元素的直接父元素，width相对于父元素的width，height相对于父元素的height。
 >注意:height百分比**必须要父元素有高度**.如果父亲没内容子元素设百分比是撑不起高度的.而宽度默认是占满整行宽度的,一般没有这个问题.
-当我们给块元素设置百分比高度时,往往没能看到效果.因为百分比的大小是相对其最近的父级元素的高的大小,也就是说,其最近的父级元素应该有一个明确的高度值才能使其百分比高度生效.（**默认的body元素没有高度 不能生效**， 可以用padding-bottom：50%）
+当我们给块元素设置百分比高度时,往往没能看到效果.因为百分比的大小是相对其最近的父级元素的高的大小,也就是说,其最近的父级元素应该有一个明确的高度值才能使其百分比高度生效.（**默认的body元素没有高度 不能生效**， 可以用**padding-bottom**：50%）
 * 子元素的**top和bottom如果设置百分比**，则相对于直接非static定位的父元素的高度，同样子元素的left和right如果设置百分比，则相对于直接非static定位父元素的宽度。
 * 子元素的padding如果设置百分比，不论是垂直方向或者是水平方向，**都相对于直接父亲元素的width，而与父元素的height无关**。
 * 子元素的margin如果设置成百分比，不论是垂直方向还是水平方向，**都相对于直接父元素的width**。
@@ -242,7 +248,7 @@ z-index 属性指定：
 * transform: translate**相对于自身**的尺寸
   
 3. em和rem相对于px更具灵活性，它们都是相对长度单位，它们之间的区别：em相对于父元素，rem相对于根元素。
-* em： 文本相对长度单位。相对于当前对象内文本的字体尺寸。如果当前行内文本的字体尺寸未被人为设置，则相对于浏览器的默认字体尺寸(默认16px)。(相对父元素的字体大小倍数)。
+* em： 文本相对长度单位。相对于当前对象内文本的字体尺寸。如果当前行内文本的字体尺寸未被人为设置，则相对于浏览器的默认字体尺寸(**默认16px**)。(相对父元素的字体大小倍数)。
 >em表示元素的font-size属性的计算值，如果用于font-size属性本身，相对于父元素的font-size，若用于其他属性，相对于本身元素的font-size，需要注意的是，使用em可能会出现1.2 * 1.2 = 1.44的现象，若父元素font-size属性设置为16px，下一级元素设置为1.2em，经计算实际像素为16px * 1.2 = 19.2px，再下一级元素若继续设置为1.2em则经计算为16px * 1.2 * 1.2 = 23.04px，这是因为父级的基准font-size属性被计算重设为另一个值，在子元素中使用em时需要根据父元素的font-size重新计算子元素的em值。
 * rem： rem是CSS3新增的一个相对单位，相对于根元素（html元素）的font-size的倍数。作用：利用rem可以实现简单的响应式布局，可以利用html元素中字体的大小与屏幕间的比值来设置font-size的值，以此实现当屏幕分辨率变化时让元素也随之变化。
 >rem单位都是相对于根元素html的font-size来决定大小的，根元素的font-size相当于提供了一个基准，当页面的size发生变化时，只需要改变font-size的值，那么以rem为固定单位的元素的大小也会发生相应的变化。由于所有元素都是以根元素的font-size为基准进行计算的，也就不存在em的1.2 * 1.2 = 1.44现象。rem不是只对定义字体大小有用，可以使用rem把整个网格系统或者UI样式库基于HTML根元素的字体大小上，这将带来更加可预测的字体大小和比例缩放，实现响应式的布局。

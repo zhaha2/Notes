@@ -58,7 +58,7 @@ CSS3中的盒模型有以下两种：标准盒子模型、IE盒子模型
 
 #### 3.1 为什么img是inline还可以设置宽高？
 img是可替换元素，这类元素的展现效果不是由CSS来控制的。他们是一种**外部对象**，外观的渲染独立于CSS。内容不受当前文档的样式影响，CSS可以影响可替换元素的位置，但是不会影响到可替换元素自身的内容。（比如iframe，可能有自己的样式表，不会继承父文档的样式）
-可替换元素有内置宽高，性质同设置了inline-block一样。
+**可替换元素有内置宽高，性质同设置了inline-block一样**。
 
 #### 4. 什么是物理像素，逻辑像素和像素密度，为什么在移动端开发时需要用到@3x, @2x这种图片？
 以 iPhone XS 为例，当写 CSS 代码时，针对于单位 px，其宽度为 414px & 896px，也就是说当赋予一个 DIV元素宽度为 414px，这个 DIV 就会填满手机的宽度；
@@ -81,10 +81,21 @@ my-image { background: (low.png); }
 
 下面是一起使用起作用的
 ``` css {.line-numbers}
+white-space: nowrap;         // 规定段落中的文本不进行换行
 overflow: hidden;            // 溢出隐藏
 text-overflow: ellipsis;      // 溢出用省略号显示
-white-space: nowrap;         // 规定段落中的文本不进行换行
 ```
+
+#### 两行超出就显示省略号
+
+```css
+overflow:hidden; 
+text-overflow:ellipsis;
+display:-webkit-box;  //将对象作为弹性伸缩盒子模型显示。
+-webkit-box-orient:vertical;  //从上到下垂直排列子元素（设置伸缩盒子的子元素排列方式）
+-webkit-line-clamp:2;   //这个属性不是css的规范属性，需要组合上面两个属性，表示显示的行数。
+```
+见 https://juejin.cn/post/6844903518520901639#heading-37
 
 [多行](https://www.jianshu.com/p/181667e52a93)
 
@@ -192,12 +203,13 @@ scrollTop：clientHeight的顶部到scrollHeight顶部的高度
 offsetTop ：指当前元素距离上方或上层元素的距离
 clientHeight： 返回当前元素在页面上的可视高度（包括padding；不包括border、margin、滚动条高度）
 offsetHeight：返回当前元素在页面上的可视高度（包括padding、border、滚动条高度；不包括margin）
-对HTML语义化标签的理解
+getComputedStyle()方法获取计算后的宽高。这个方法取得值是内容content区域的值，与padding、margin和边框无关。
 
 >https://blog.csdn.net/ImagineCode/article/details/101992717
 
 ### 7. Flex
-Flex是FlexibleBox的缩写，意为"**弹性布局**"，用来为盒状模型提供最大的**灵活性**。任何一个容器都可以指定为Flex布局。行内元素也可以使用Flex布局。注意，设为Flex布局以后，**子元素的float、clear和vertical-align属性将失效**。采用Flex布局的元素，称为**Flex容器**（flex container），简称"容器"。它的所有子元素自动成为容器成员，称为**Flex项目**（flex item），简称"项目"。容器默认存在两根轴：水平的主轴（main axis）和垂直的交叉轴（cross axis），项目默认沿水平主轴排列。
+
+Flex是FlexibleBox的缩写，意为"**弹性布局**"，用来为盒状模型提供最大的**灵活性**。任何一个容器都可以指定为Flex布局。**行内元素也可以使用Flex布局(会变成block)**。注意，设为Flex布局以后，**子元素的float、clear和vertical-align属性将失效**。采用Flex布局的元素，称为**Flex容器**（flex container），简称"容器"。它的所有子元素自动成为容器成员，称为**Flex项目**（flex item），简称"项目"。容器默认存在两根轴：水平的主轴（main axis）和垂直的交叉轴（cross axis），项目默认沿水平主轴排列。
 
 以下6个属性设置在容器上：
 * flex-direction属性决定主轴的方向（即项目的排列方向）。
@@ -457,13 +469,13 @@ CSS中float属性会使元素浮动，使元素向左或向右移动，直到它
 
 * relative
   - 该关键字下，元素先放置在未添加定位时的位置，再在不改变页面布局的前提下调整元素位置（因此会在此元素未添加定位时所在位置留下空白）。
-  - 元素的位置通过left、top、right、bottom属性进行规定。
+  - 元素的位置通过left、top、right、bottom属性进行规定。(距离自己原本位置多远)
   - position:relative 对 table-*-group, table-row, table-column, table-cell, table-caption 元素无效。
   - 而其层叠通过z-index属性定义。
 
 * absolute
   - 元素会被移出正常文档流，并不为元素预留空间，通过指定元素相对于最近的**非 static 定位**祖先元素的偏移，来确定元素位置。绝对定位的元素可以设置外边距（margins），且不会与其他边距合并。
-  - 元素的位置通过left、top、right、bottom属性进行规定。(距离自己原本位置多远)
+  - 元素的位置通过left、top、right、bottom属性进行规定。
   - 而其层叠通过z-index属性定义。
   
 * fixed
