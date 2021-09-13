@@ -270,6 +270,40 @@ vw/vm：相对于视窗的尺寸
 >https://developer.mozilla.org/zh-CN/docs/Learn/CSS/Building_blocks/Values_and_units#%E5%8D%81%E5%85%AD%E8%BF%9B%E5%88%B6rgb%E5%80%BC
 
 ### 8. css动画
+- transform：描述了元素的静态样式，本身不会呈现动画效果，可以对元素进行 旋转rotate、扭曲skew、缩放scale和移动translate以及矩阵变形matrix.
+  transform常常配合transition和animation使用
+
+- transition样式过渡，从一种效果逐渐改变为另一种效果。transition是一个合写属性：
+```js
+//从左到右分别是：css属性、过渡效果花费时间、速度曲线、过渡开始的延迟时间
+transition:transition-property transition-duration transition-timing-function transition-delay
+```
+
+- animation动画 由@keyframes来描述每一帧的样式
+```js
+div{
+　　animation:myAnimation 5s infinite
+}
+@keyframes myAnimation {
+　　0%{left:0;transform:rotate(0);}
+　　100%{left:200px;transform:rotate(180deg);}
+}
+```
+
+#### 区别
+（1）transform仅描述元素的静态样式，常常配合transition和animation使用
+
+（2）transition通常和hover等事件配合使用，animation是自发的，立即播放
+
+（3）animation可设置循环次数
+
+（4）animation可设置每一帧的样式和时间，transition只能设置头尾
+
+（5）transition可与js配合使用，js设定要变化的样式，transition负责动画效果
+
+>https://blog.csdn.net/ImagineCode/article/details/101992717
+
+---
 https://juejin.cn/post/6844903615920898056#heading-2
 
 opacity实现过渡

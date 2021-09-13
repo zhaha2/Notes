@@ -156,11 +156,11 @@ only运算符仅在整个查询匹配时才用于应用样式，并且对于防�
 关于兼容： 页面头部必须有mata声明的viewport。
 
 总结就是viewport+媒体查询
+viewport设定页面宽度为设备宽度，媒体查询则获取页面宽度
 >见 http://www.ruanyifeng.com/blog/2012/05/responsive_web_design.html
 
 >为何需要这个？因为移动端浏览器倾向于在它们的视口宽度上说谎。
 https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/Responsive_Design#%E8%A7%86%E5%8F%A3%E5%85%83%E6%A0%87%E7%AD%BE
-
 >见
 https://github.com/WindrunnerMax/EveryDay/blob/master/CSS/%E5%93%8D%E5%BA%94%E5%BC%8F%E5%B8%83%E5%B1%80%E7%9A%84%E5%AE%9E%E7%8E%B0.md
 [移动端页面开发适配 rem布局原理](https://segmentfault.com/a/1190000007526917)  (viewport)
@@ -168,6 +168,13 @@ https://github.com/WindrunnerMax/EveryDay/blob/master/CSS/%E5%93%8D%E5%BA%94%E5%
 >[响应式布局的常用解决方案对比(媒体查询、百分比、rem和vw/vh）](https://juejin.cn/post/6844903630655471624#heading-12)
 [面试官：你了解过移动端适配吗？](https://juejin.cn/post/6844903631993454600#heading-12)
 [rem布局解析](https://juejin.cn/post/6844903671143088136)
+
+
+#### Rem布局
+1. CSS Media
+2. JS检测
+
+>https://blog.csdn.net/ImagineCode/article/details/101992717
 
 ### 6. 如何判断元素是否到达可视区域 
 以图片显示为例：
@@ -177,6 +184,17 @@ https://github.com/WindrunnerMax/EveryDay/blob/master/CSS/%E5%93%8D%E5%BA%94%E5%
 * 内容达到显示区域的：img.offsetTop < window.innerHeight + document.body.scrollTop;
   
 ![](image/2021-06-26-16-54-12.png)
+
+#### scrollHeight、scrollTop、clientHeight、offsetHeight区别
+
+scrollHeight：返回当前整个元素的高度（包括带滚动条的隐蔽的地方）
+scrollTop：clientHeight的顶部到scrollHeight顶部的高度
+offsetTop ：指当前元素距离上方或上层元素的距离
+clientHeight： 返回当前元素在页面上的可视高度（包括padding；不包括border、margin、滚动条高度）
+offsetHeight：返回当前元素在页面上的可视高度（包括padding、border、滚动条高度；不包括margin）
+对HTML语义化标签的理解
+
+>https://blog.csdn.net/ImagineCode/article/details/101992717
 
 ### 7. Flex
 Flex是FlexibleBox的缩写，意为"**弹性布局**"，用来为盒状模型提供最大的**灵活性**。任何一个容器都可以指定为Flex布局。行内元素也可以使用Flex布局。注意，设为Flex布局以后，**子元素的float、clear和vertical-align属性将失效**。采用Flex布局的元素，称为**Flex容器**（flex container），简称"容器"。它的所有子元素自动成为容器成员，称为**Flex项目**（flex item），简称"项目"。容器默认存在两根轴：水平的主轴（main axis）和垂直的交叉轴（cross axis），项目默认沿水平主轴排列。
