@@ -453,6 +453,20 @@ BigInt.parseInt('9007199254740993',10)
 
 ### Symbol
 
+它的功能类似于一种标识唯一性的ID，每个Symbol实例都是唯一的。
+Symbol类型的key是不能通过Object.keys()或者for...in来枚举的，
+它未被包含在对象自身的属性名集合(property names)之中。
+所以，利用该特性，我们可以把一些不需要对外操作和访问的属性使用Symbol来定义。
+// 使用Object的API
+Object.getOwnPropertySymbols(obj) // [Symbol(name)]
+// 使用新增的反射API
+Reflect.ownKeys(obj) // [Symbol(name), 'age', 'title']
+ES6里的set和map
+(记得说一下怎么遍历得到symbol属性)
+>作者：伊人a
+链接：https://juejin.cn/post/6989422484722286600。
+
+---
 ES5 的对象属性名都是字符串，这容易造成属性名的冲突。比如，你使用了一个他人提供的对象，但又想为这个对象添加新的方法（mixin 模式），新方法的名字就有可能与现有方法产生冲突。如果有一种机制，保证每个属性的名字都是独一无二的就好了，这样就从根本上**防止属性名的冲突**。这就是 ES6 引入Symbol的原因。
 
 注意，Symbol函数前**不能使用new命令**，否则会报错。这是因为生成的 Symbol 是一个原始类型的值，不是对象。也就是说，由于 Symbol 值不是对象，所以不能添加属性。基本上，**它是一种类似于字符串的数据类型**。
@@ -538,6 +552,20 @@ Symbol 作为属性名，**遍历对象**的时候，该属性不会出现在for
 ### 其他
 
  rest 参数 模板字符串 Map Set
+
+ ---
+ 新增symbol类型 表示独一无二的值，用来定义独一无二的对象属性名;
+const/let  都是用来声明变量,不可重复声明，具有块级作用域。存在暂时性死区，也就是不存在变量提升。(const一般用于声明常量);
+变量的解构赋值(包含数组、对象、字符串、数字及布尔值,函数参数),剩余运算符(...rest);
+模板字符串(${data});
+扩展运算符(数组、对象);;
+箭头函数;
+Set和Map数据结构;
+Proxy/Reflect;
+Promise;
+async函数;
+Class;
+Module语法(import/export)
 
 >见 https://www.yuque.com/cuggz/interview/vgbphi#3fb2aa8bcb617ca0de8bfafd7da899e3
 >https://es6.ruanyifeng.com/?search=EPSILON&x=4&y=8

@@ -249,6 +249,7 @@ https://blog.csdn.net/zhoulei1995/article/details/80161240 CSS 负边距
     			padding: 0 100px;
     		}
         .middle {
+          /* 注意这里设置width: 100%; */
             width: 100%;
             height: 100px;
             background: red;
@@ -264,7 +265,7 @@ https://blog.csdn.net/zhoulei1995/article/details/80161240 CSS 负边距
             /* 2、走中间盒子的-100%（因为他在第二个所以走100%） */
             margin-left: -100%;
             /* 5 相对定位,往回走 */
-            position: re lative;
+            position: relative;
             left: -100px;
         }
         .right {
@@ -282,6 +283,7 @@ https://blog.csdn.net/zhoulei1995/article/details/80161240 CSS 负边距
 </head>
 <body>
     <div class="content">
+      <!-- 注意middle在前面 -->
         <div class="middle">
             middle
         </div>
@@ -448,7 +450,7 @@ child{
 ##### 3.3.1 固定宽高
 ###### 3.3.1.1 margin
 
-注意，会发生父子margin重叠
+注意，**会发生父子margin重叠**
 
 **父元素要设置overflow: hidden**;
 
@@ -565,6 +567,7 @@ img是行内元素
 
 1. flex
 2. position
+   >上面两个都会把行内元素表现得变为块级元素
 3. text-align: center;
 4. 垂直居中：
    `vertical-align:middle;`
@@ -583,6 +586,7 @@ CSS绘制三角形主要用到的是border属性，也就是边框。
 div {
     width: 0;
     height: 0;
+    /* 这里盒子高为200px，因为有两个border */
     border: 100px solid;
     border-color: orange blue red green;
 }
@@ -592,6 +596,9 @@ div {
 
 ---
 原理就是边框的衔接部分是斜角的方式，正是因为此，我们可以做很多有意思的事情，这也是面试中经常考查看的手写css问题，我们明白了原理简单的自己尝试下吧
+
+也可以设置width height不为0来画梯形
+
 ![](image/2021-06-27-18-07-03.png)
 
 1. 三角1
@@ -626,7 +633,9 @@ div{
     border: 100px solid transparent;
     width: 0;
     heigt: 0;
-    border-radius: 100px;
+    /* 半径是100px */
+    /* 这句才让三角形变成扇形了 */
+    border-radius: 100px；ll;
     border-top-color: red;
 }
 ```

@@ -97,10 +97,12 @@ https://blog.csdn.net/qq_38128179/article/details/101023305
 1. css3硬件加速（GPU加速）
 
    可以让transform、opacity、filters这些动画不会引起回流重绘
+  >transform 不重绘，不回流
+是因为transform属于合成属性，对合成属性进行transition/animate动画时，将会创建一个合成层。这使得动画元素在一个独立的层中进行渲染。当元素的内容没有发生改变，就没有必要进行重绘。浏览器会通过重新复合来创建动画帧。                                                                                      
 
-2. 避免逐个修改节点样式，尽量一次性修改(使用cssText或者修改CSS的class)
+1. 避免逐个修改节点样式，尽量一次性修改(使用cssText或者修改CSS的class)
 
-3. 使用DocumentFragment将需要多次修改的DOM元素缓存，最后一次性append到真实DOM中渲染
+2. 使用DocumentFragment将需要多次修改的DOM元素缓存，最后一次性append到真实DOM中渲染
 ```js
 function appendDataToElement(appendToElement, data) {
     let li;
@@ -277,7 +279,7 @@ module.exports = function (content) {
 ```
 但css-loader返回的不是css样式代码的文本，而**是一个js模块的代码**，将这些js代码直接放进style标里显然是不行的。
 
-style-loader 通过一个JS脚本创建一个style标签，里面包含一些样式。
+style-loader 通过一个JS脚本**创建一个style标签**，里面包含一些样式。
 
 ---
 在实际使用中，**css-loader 的执行顺序一定要安排在 style-loader 的前面**。因为只有完成了编译过程，才可以对 css 代码进行插入；若提前插入了未编译的代码，那么 webpack 是无法理解这坨东西的，它会无情报错。

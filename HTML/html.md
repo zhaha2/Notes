@@ -44,7 +44,7 @@
 
 ### 1. iframe框架及优缺点
 https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/Iframe%E6%A1%86%E6%9E%B6%E5%8F%8A%E4%BC%98%E7%BC%BA%E7%82%B9.md
-iframe 元素会创建包含另外一个文档的内联框架（即行内框架）。
+iframe 元素会创建包含另外一个文档的内联框架（即**行内**框架，其实因为它有src属性，是替换元素）。
 
 优点：
 用来加载速度较慢的内容（如广告）
@@ -59,17 +59,18 @@ iframe 会阻塞主页面的 onload 事件
 ### 2. src和href的区别
 关键：src 用于替换当前元素，href 用于在当前文档和引用资源之间确立联系。
 1. src
-src 是 source 的缩写，指向外部资源的位置，指向的内容将会嵌入到文档中当前标签所在位置；在请求 src 资源时会将其指向的资源下载并应用到文档内，例如 js 脚本，img 图片和 frame 等元素。这也是为什么将js脚本放在底部而不是头部。(src引用的外部资源不会阻塞渲染。)
+src 是 source 的缩写，指向外部资源的位置，**指向的内容将会嵌入到文档中当前标签所在位置**；在请求 src 资源时会将其指向的资源下载并应用到文档内，例如 js 脚本，img 图片和 frame 等元素。这也是为什么将js脚本放在底部而不是头部。(src引用的外部资源不会阻塞渲染。)
   ``` <script src =”js.js”></script> ```
->img的加载不会阻塞html的解析，但img加载后并不渲染，它需要**等待Render Tree生成完后**才和Render Tree一起渲染出来。未下载完的图片需等下载完后才渲染。
-1. href
+>img的加载不会阻塞html的解析，但img加载后并不渲染，它需要**等待Render Tree生成完后**才和Render Tree一起渲染出来。未下载完的图片需等下载完后才渲染。、
+
+2. href
 href 是 Hypertext Reference 的缩写，指向网络资源所在位置，建立和当前元素（锚点）或当前文档（链接）之间的链接，一般用于超链接. 如果在文档中添加 
   ``` <link href=”common.css” rel=”stylesheet”/> ```
 那么浏览器会识别该文档为 css 文件，就会并行下载资源并且不会停止对当前文档的处理。 这也是为什么建议使用 link 方式来加载 css，而不是使用@import 方式。
 
 ### 3. HTML语义化
 语义化是指根据内容的结构化（内容语义化），选择合适的标签（代码语义化）。通俗来讲就是用正确的标签做正确的事情。
-语义化可以总结为 根据内容选择标签，用最恰当的标签来标记内容。
+语义化可以总结为 **根据内容选择标签，用最恰当的标签来标记内容**。
 例如网页中的标题使用`<h1>~<h6>`这样的标签，而不是使用`<div>+css`。
 
 为什么要进行语义化？
@@ -582,6 +583,12 @@ res.setHeader('Set-Cookie', 'name=xxx;');
 document.cookie = 'name=xxx;';
 ```
 
+删除cookie
+```js
+// 直接把 expires 参数设置为过去的日期即可：
+document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+```
+
 ###### token (补充)
 
 当用户发送请求，将用户信息带给服务器的时候，服务器不再像过去一样存储在 session 中，而是将浏览器发来的内容通过内部的密钥加上这些信息，使用 sha256 和 RSA 等加密算法生成一个 token 令牌和用户信息一起返回给浏览器，当涉及验证用户的所有请求只需要将这个 token 和用户信息发送给服务器，而服务器将用户信息和自己的密钥通过既定好的算法进行签名，然后将发来的签名和生成的签名比较，严格相等则说明用户信息没被篡改和伪造，验证通过。
@@ -626,7 +633,7 @@ SessionStorage和LocalStorage都是在HTML5才提出来的存储方案，Session
 
 **SessionStorage与LocalStorage对比**：
 - SessionStorage和LocalStorage都在本地进行数据存储；
-- SessionStorage也有同源策略的限制，但是SessionStorage有一条更加严格的限制，SessionStorage只有在同一浏览器的同一窗口下才能够共享；
+- SessionStorage也有同源策略的限制，但是SessionStorage有一条更加严格的限制，SessionStorage只有在**同一浏览器的同一窗口下才能够共享**；
   >同一浏览器的相同域名和端口的不同页面间可以共享相同的 localStorage，但是**不同页面间无法共享sessionStorage**的信息。
 - LocalStorage和SessionStorage都不能被爬虫爬取；
 
@@ -807,6 +814,7 @@ Canvas是画布，通过Javascript来绘制2D图形，是逐像素进行渲染�
 （4）canvas（画布）、Geolocation（地理定位）、websocket（通信协议）
 （5）input标签新增属性：placeholder、autocomplete、autofocus、required
 （6）history API：go、forward、back、pushstate
+ (7) DOM 操作：querySelector，classList
 
 移除的元素有：
 纯表现的元素：basefont，big，center，font, s，strike，tt，u;
