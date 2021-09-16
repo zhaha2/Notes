@@ -629,7 +629,10 @@ LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息
 - 鉴权的token也可以存在localStorage中
 
 ###### 7.5.2.3 SessionStorage
-SessionStorage和LocalStorage都是在HTML5才提出来的存储方案，SessionStorage 主要用于临时保存同一窗口(或标签页)的数据，刷新页面时不会删除，关闭窗口或标签页之后将会删除这些数据。
+SessionStorage和LocalStorage都是在HTML5才提出来的存储方案，SessionStorage 主要用于临时保存同一窗口(或标签页)的数据，**刷新页面时不会删除**，关闭窗口或标签页之后将会删除这些数据。
+
+>注意与vuex的区别，vuex中数据刷新会删除。
+因为store里的数据是保存在运行内存中的,当页面刷新时，页面会重新加载vue实例，store里面的数据就会被重新赋值初始化
 
 **SessionStorage与LocalStorage对比**：
 - SessionStorage和LocalStorage都在本地进行数据存储；

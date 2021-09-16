@@ -845,6 +845,19 @@ Object.defineProperty(this, 'a' , {
 console.log(a == 1 && a == 2 && a == 3); // true
 ```
 
+#### 字母和ASCII转换
+
+字母转ASCII: str.charCodeAt()
+```js
+'a'.charCodeAt(0)
+// 97
+```
+
+ASCII转字母: String.fromCharCode(num)
+```js
+console.log(String.fromCharCode(65));
+// A
+```
 
 ### 数组方法
 
@@ -1515,7 +1528,12 @@ const fn = () => {
 
 ##### window.open + postMessage 
 
-postMessage本身是不限制同源的
+- postMessage本身是**不限制同源**的
+
+- postMessage是异步的
+    - PostMessage 只把消息放到队列，不管消息是不是被处理就返回，消息可能不被处理；
+    - sendMessage是同步的
+
 也可以用event.souce找到父窗口
 
 ```js
@@ -1537,6 +1555,15 @@ window.addEventListener('message', function(e) {
 
 window.opener.postMessage('Nice to see you', '*');
 ```
+
+**安全问题**
+如果您不希望从其他网站接收message，请不要为message事件添加任何事件侦听器。 这是一个完全万无一失的方式来避免安全问题。
+
+如果您确实希望从其他网站接收message，请始终**使用origin和source属性验证发件人的身份**。 任何窗口（包括例如http://evil.example.com）都可以向任何其他窗口发送消息，并且您不能保证未知发件人不会发送恶意消息。 但是，验证身份后，您仍然应该始终验证接收到的消息的语法。 否则，您信任只发送受信任邮件的网站中的安全漏洞可能会在您的网站中打开跨网站脚本漏洞。
+
+当您使用postMessage将数据发送到其他窗口时，**始终指定精确的目标origin，而不是`*`**。 恶意网站可以在您不知情的情况下更改窗口的位置，因此它可以拦截使用postMessage发送的数据。
+
+>https://developer.mozilla.org/zh-CN/docs/Web/API/Window/postMessage
 
 ##### LocalStorage（两个同源页面）
 ```js

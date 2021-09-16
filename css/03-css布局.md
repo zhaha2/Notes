@@ -187,6 +187,22 @@ https://github.com/WindrunnerMax/EveryDay/blob/master/CSS/%E5%93%8D%E5%BA%94%E5%
 
 >https://blog.csdn.net/ImagineCode/article/details/101992717
 
+#### 1px问题
+
+1px 的边框在高清屏下，移动端的1px 会很粗。
+主要是跟一个东西有关，DPR(devicePixelRatio) 设备像素比，它是默认缩放为100%的情况下，设备像素和CSS像素的比值。
+因为2倍屏用2*2个物理像素表示一个css像素。
+
+
+1. transform: scale(1, 0.5);
+2. 根据设备像素设置viewport
+```js
+if (window.devicePixelRatio == 3) {
+  viewport.setAttribute('content', 'width=device-width,initial-scale=0.3333333333333333, maximum-scale=0.3333333333333333, minimum-scale=0.3333333333333333, user-scalable=no');
+}
+```
+https://juejin.cn/post/6844903877947424782#heading-13
+
 ### 6. 如何判断元素是否到达可视区域 
 以图片显示为例：
 * window.innerHeight 是浏览器可视区的高度；documentElment.clientHeight(老版本)
@@ -536,11 +552,14 @@ absolute元素, top和margin-top可以同时作用
 - transform 和 position:relative 的效果是一样的。
 
 - 差别在于，transform 可以简单地作用于 position:absolute 的元素上面，而 position:relative; 还得加额外的 html
+- 改变transform或opacity**不会触发浏览器重新布局**（reflow）或重绘（repaint），只会触发复合（compositions）。
+
+>translate 也是会在原地留有位置的（脱标的才不留）
 
 从动画角度来说
 - 使用 transform 或 position 实现动画效果时是有很大差别。
 
-- 使用 transform 时，可以让 GPU 参与运算，动画的 FPS 更高。
+- 使用 transform 时，可以**让 GPU 参与运算**，动画的 FPS 更高(在新的图层（合成层）展示)。
 
 - 使用 position 时，最小的动画变化的单位是 1px，而使用 transform 参与时，可以做到更小（动画效果更加平滑）
 

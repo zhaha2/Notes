@@ -255,6 +255,13 @@ Webpack 能处理 CSS 吗：
 * Webpack 在 loader 的辅助下，是可以处理 CSS 的。
 
 ### css-loader 和 style-loader
+
+- css-loader
+分析 css 模块之间的关系，并合成⼀个 css
+- style-loader
+把 css-loader 生成的内容，用 style 标签挂载到页面的 head 中
+
+---
 如何用 Webpack 实现对 CSS 的处理：
 * Webpack 中操作 CSS 需要使用的两个关键的 loader：css-loader 和 style-loader
 * 注意，答出“用什么”有时候可能还不够，面试官会怀疑你是不是在背答案，所以你还需要了解每个 loader **都做了什么事情**：

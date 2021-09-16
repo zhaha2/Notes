@@ -843,6 +843,7 @@ div {
 ```
 
 2. gradient
+   
 ```css
 div {
   width: 300px;
@@ -863,9 +864,9 @@ div {
 }
 
 .test::after {
+  /* 必须有这行 */
   content: "";
-  /* block似乎也行 */
-  display: inline-block;
+  display: block;
   /* width: 50px; */
   margin-left: 50%;
   height: 100%;

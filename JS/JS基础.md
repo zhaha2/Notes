@@ -857,6 +857,20 @@ removeEventListener() ---删除事件侦听器
 
 这个对象中包含了与当前事件相关的一切信息。比如鼠标的坐标、键盘的哪个按键被按下、鼠标滚轮滚动的方向等。
 
+##### 获取触发事件的对象
+
+event.target
+
+event.currentTarget 标识是当事件沿着 DOM 触发时事件的**当前目标**。它总是指向事件绑定的元素，而 Event.target 则是事件**触发的元素**。
+
+**获取事件传播路径**
+Event.composedPath() 返回一个 EventTarget对象数组，表示将在其上调用事件侦听器的对象。
+
+e.g.
+```js
+Array [ p, ShadowRoot, open-shadow, body, html, HTMLDocument https://mdn.github.io/web-components-examples/composed-composed-path/, Window ]
+```
+
 ##### 获取 event 对象
 
 写法是 `event`。比如：
@@ -1265,6 +1279,24 @@ document.querySelector("#id-checkbox").addEventListener("click", function(event)
 ---
 对于事件代理来说，**在事件捕获或者事件冒泡阶段处理并没有明显的优劣之分**，但是由于事件冒泡的事件流模型被所有主流的浏览器兼容，从兼容性角度来说还是建议大家使用事件冒泡模型。
 
+##### 优缺点
+
+优点：
+1. 减少事件注册，节省内存，如：
+
+- table可以代理所有td的click事件
+- ul代理所有li的click事件
+2. 减少了dom节点更新的操作，处理逻辑只需在委托元素上进行，如：
+
+- 新添加的li不用绑定事件
+- 删除li时，不需要进行元素与处理函数的解绑
+
+缺点：
+- 事件委托基于冒泡，对于不冒泡的事件（onfoucs和onblur等事件）不支持。
+- 层级过多，冒泡过程中，可能会被某层阻止掉。（建议就近委托）
+- 把所有事件都用代理就可能会出现事件误判
+
+---
 事件委托的参考链接：
 
 - [荐 | JavaScript事件代理和委托（Delegation）](https://www.cnblogs.com/owenChen/archive/2013/02/18/2915521.html)
