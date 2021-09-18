@@ -285,6 +285,8 @@ vw/vm：相对于视窗的尺寸
 transition:transition-property transition-duration transition-timing-function transition-delay
 ```
 
+#### animation
+
 - animation动画 由@keyframes来描述每一帧的样式
 ```js
 div{
@@ -295,6 +297,46 @@ div{
 　　100%{left:200px;transform:rotate(180deg);}
 }
 ```
+
+Animation 常用动画属性
+![](image/2021-09-18-18-44-15.png)
+
+@keyframes的几个关键词
+1. from和to，标记元素的起始状态和结束状态，例如下面例子，元素的起始背景色是红色，使其慢慢变成蓝色就可以这样写；
+   ![](image/2021-09-18-18-42-25.png)
+2.  状态变化也可以用百分比进行标识，添加动画在每个进度时的效果；
+  
+- **0%可以用from代表，100%可以用to代表。**
+- 如果省略某个状态，浏览器会自动推算中间状态
+
+应用：回弹效果
+```css
+/* 规定动画，改变top,opacity */
+@keyframes animate {
+  0% {
+    top: -100%;
+    opacity: 0;
+  }
+  25% {
+    top: 60;
+    opacity: 1;
+  }
+  50% {
+    top: 48%;
+    opacity: 1;
+  }
+  75% {
+    top: 52%;
+    opacity: 1;
+  }
+  100%{
+    top: 50%;
+    opacity: 1;
+  }
+}
+```
+
+>https://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html
 
 #### 区别
 （1）transform仅描述元素的静态样式，常常配合transition和animation使用
