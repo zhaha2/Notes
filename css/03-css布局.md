@@ -14,11 +14,20 @@ CSS3中的盒模型有以下两种：标准盒子模型、IE盒子模型
 * box-sizing:padding-box—高宽包括了padding和content。
 
 > JS如何获取盒模型对应的宽和高
-（1）dom.style.width/height 只能取到行内样式的宽和高，style 标签中和 link 外链的样式取不到。
+（1）dom.style.width/height 只能取到**行内样式**的宽和高，style 标签中和 link 外链的样式取不到。
 （2）dom.currentStyle.width/height （只有IE兼容）取到的是最终渲染后的宽和高
 （3）window.getComputedStyle(dom).width/height 同（2）但是多浏览器支持，IE9 以上支持。
 （4）dom.getBoundingClientRect().width/height 也是得到渲染后的宽和高，大多浏览器支持。IE9 以上支持，除此外还可以取到相对于视窗的上下左右的距离。
 >（6）dom.offsetWidth/offsetHeight 包括高度（宽度）、内边距和边框，不包括外边距。最常用，兼容性最好。
+
+注意：`window.getComputedStyle`(注意是window **BOM的方法**，不是dom对象的)不仅可以获取宽高，还可以获取**其他所有的style属性**。
+
+```js
+<div class="aa">as</div>
+
+let dom = document.getElementsByClassName('aa')[0];
+console.log(window.getComputedStyle(dom).boxSizing);  //"content-box"
+```
 
 #### 1.1 margin冲突问题
 子元素盒模型宽度和超过父元素宽度时
