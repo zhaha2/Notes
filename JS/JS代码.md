@@ -702,6 +702,8 @@ function cloneFunction(func) {
 }
 ```
 
+#### call apply bind
+
 #### 静态属性
 写一个函数 Foo 要求:
 ```js

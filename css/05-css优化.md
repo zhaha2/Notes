@@ -79,10 +79,10 @@ console.log(ele.offsetWidth)
 - 用querySelectorAll()替代getElementByXX()。
 
 2. 减少重排
-- 避免设置大量的style内联属性，因为通过设置style属性改变结点样式的话，每一次设置都会触发一次reflow，所以最好是使用class属性
+- 避免设置大量的style内联属性，因为通过设置style属性改变结点样式的话，每一次设置都会触发一次reflow，所以**最好是使用class属性**
 - 不要使用table布局，因为table中某个元素一旦触发了reflow，那么整个table的元素都会触发reflow。那么在不得已使用table的场合，可以设置table-layout:auto;或者是table-layout:fixed这样可以让table一行一行的渲染，这种做法也是为了限制reflow的影响范围
 - 尽量少使用display：none可以使用visibility：hidden代替，- - display：none会造成**重排**，visibility：hidden只会造成**重绘**。
-- 使用resize事件时，做防抖和节流处理。
+- 使用resize事件时，做**防抖和节流处理**。
 
 3. css及优化动画
 - 少用css表达式

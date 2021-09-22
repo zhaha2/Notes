@@ -627,7 +627,7 @@ https://juejin.cn/post/6844904034181070861#heading-25
 LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息较大，Cookie就不能满足我们的需求，这时候LocalStorage就派上用场了。
 
 **LocalStorage的优点**：
-- 在大小方面，LocalStorage的大小一般为5MB，可以储存更多的信息
+- 在大小方面，LocalStorage的大小一般为5MB（不一定），可以储存更多的信息
 - LocalStorage是持久储存，并不会随着页面的关闭而消失，除非主动清理，不然会永久存在
 - 仅储存在本地，不像Cookie那样每次HTTP请求都会被携带
 
@@ -644,6 +644,10 @@ LocalStorage是HTML5新引入的特性，由于有的时候我们存储的信息
 - 在网站中的用户浏览信息也会存储在LocalStorage中，还有网站的一些不常变动的个人信息等也可以存储在本地的LocalStorage中
 - 购物车？
 - 鉴权的token也可以存在localStorage中
+
+**怎么查看localstorage最大存储空间**
+不停添加数据，知道报错无法添加。用try，catch捕获。
+>https://segmentfault.com/a/1190000023557776
 
 ###### 7.5.2.3 SessionStorage
 SessionStorage和LocalStorage都是在HTML5才提出来的存储方案，SessionStorage 主要用于临时保存同一窗口(或标签页)的数据，**刷新页面时不会删除**，关闭窗口或标签页之后将会删除这些数据。
@@ -716,6 +720,8 @@ H5可以直接在标签里添加自定义属性，**但必须以 `data-` 开头*
 
 #### 7.7 Drag API
 拖放是一种常见的特性，即捉取对象以后拖到另一个位置，在`HTML5`中，拖放是标准的一部分，任何元素都能够拖放。
+
+通过设置`draggable="true"`开启拖放
 
 示例:
 ```html
