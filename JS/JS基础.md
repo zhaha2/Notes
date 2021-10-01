@@ -383,6 +383,41 @@ getComputedStyle()方法获取计算后的宽高。这个方法取得值是内�
 
 >[原生JS获取元素宽高实践详解](https://juejin.cn/post/6844903687043727368#heading-4)
 
+#### 常见的BOM操作有哪些
+
+浏览器里面，window对象（注意，w为小写）指当前的浏览器窗口。它也是当BOM的顶层对象
+
+（1）window.open()
+window.open方法用于新建另一个浏览器窗口，类似于浏览器菜单的新建窗口选项。它会**返回新窗口的引用**，如果无法新建窗口，则返回null
+
+（2）window.close()
+window.close方法用于关闭当前窗口，一般只用来关闭window.open方法新建的窗口。
+
+（3）window.scrollTo()
+window.scrollTo方法用于将文档滚动到指定位置。它接受两个参数，表示滚动后位于窗口左上角的页面坐标。
+
+（4）window.devicePixelRatio 
+window.devicePixelRatio属性返回一个数值，表示一个 CSS 像素的大小与一个物理像素的大小之间的比率。也就是说，它表示一个 CSS 像素由多少个物理像素组成。它可以用于判断用户的显示环境，如果这个比率较大，就表示用户正在使用高清屏幕，因此可以显示较大像素的图片。
+
+（5）全局对象属性
+全局对象属性指向一些浏览器原生的全局对象。
+
+- window.document：指向document对象，详见《document 对象》一章。注意，这个属性有同源限制。只有来自同源的脚本才能读取这个属性。
+>window.document
+**window是document的父级对象**，document是DOM的顶级对象
+
+- window.location：指向Location对象，用于获取当前窗口的 URL 信息。它等同于document.location属性，详见《Location 对象》一章。
+- window.navigator：指向Navigator对象，用于获取环境信息，详见《Navigator 对象》一章。
+- window.history：指向History对象，表示浏览器的浏览历史，详见《History 对象》一章。
+- window.localStorage：指向本地储存的 localStorage 数据，详见《Storage 接口》一章。
+- window.sessionStorage：指向本地储存的 sessionStorage 数据，详见《Storage 接口》一章。
+
+
+
+
+
+>https://wangdoc.com/javascript/bom/window.html#windowopen-windowclosewindowstop
+
 ### 4. 严格模式
 use strict 是一种 ECMAscript5 添加的（严格模式）运行模式，这种模式使得 Javascript 在更严格的条件下运行。设立严格模式的目的如下：
 - 消除 Javascript 语法的不合理、不严谨之处，减少怪异行为;
@@ -550,8 +585,9 @@ Object的key的排序规则:
 
 - 如果key是整数（如：123）或者整数类型的字符串（如：“123”），那么会按照从小到大的排序。
 - 除此之外，其它数据类型，都按照对象key的实际创建顺序排序。
+>注意：只有正整数会排序，**小数和负数也会被当作字符串**。
 
-另外，如果key中除了整数或者整数类型的字符串外，还含有其它数据类型，则整数放在最前面，比如：
+另外，如果key中除了整数或者整数类型的字符串外，还含有其它数据类型，则**整数放在最前面**，比如：
 
 ```js
 var obj = {
@@ -709,12 +745,12 @@ Axios 是一种基于Promise封装的HTTP客户端，其特点如下：
 - 函数是一等公民。使用function关键字声明的函数。在变量对象中以函数名建立一个属性，属性值为指向该函数所在**内存地址的引用**。即会把整段函数代码都初始化。可以直接使用。
   >这里要清楚理解，函数声明才会被提升，**函数表达式(`const f = function (){}`)不会被提升**，**函数表达式就相当于变量声明**
   >注意：**这里说的只是声明阶段**，执行阶段函数还是会被覆盖
-- 每找到一个变量声明，就在变量对象中以变量名建立一个属性，属性值为undefined。**如果该变量名的属性已经存在**，为了防止同名的函数被修改为undefined，**则会直接跳过**，原属性值不会被修改。
+- 每找到一个变量声明，就在变量对象中以变量名建立一个属性，属性值为undefined。**如果该变量名的属性已经存在**，为了防止同名的函数被修改为undefined，**则会直接跳过（但是执行阶段还是会被修改）**，原属性值不会被修改。
 也就是同一个执行上下文中，变量对象是唯一的，但有可能在下个阶段（代码执行阶段）被修改赋值
 >e.g.
 >```js
 >  function testOrder(arg) {
->      console.log(arg); // arg是形参，不会被重新定义
+>      console.log(ar   g); // arg是形参，不会被重新定义
 >      console.log(a); // 因为函数声明比变量声明优先级高，所以这里a是函数
 >      var arg = 'hello'; // var arg;变量声明被忽略， arg = 'hello'被执行
 >      var a = 10; // var a;被忽视; a = 10被执行，a变成number
@@ -850,6 +886,20 @@ removeEventListener() ---删除事件侦听器
 
 - `addEventListener()`不支持 IE8 及以下的浏览器。在IE8中可以使用`attachEvent`来绑定事件。
 -  普通方式绑定事件后，不可以取消。`addEventListener`绑定后则可以用 `removeEvenListener` 取消。
+
+---
+兼容性
+IE是ele.attachEvent；和detachEvent
+
+IE的attachEvent绑定的方法上，
+
+- 第一点、this不是当前元素了，而是**变成了window**；
+- 第二点，事件的执行顺序是混乱的；
+在IE678中，如果绑定的方法少于9个，执行的顺序是相反的，如果多于9个，执行的是混乱的；
+- 第三点，同一函数可以重复绑定在同一事件上；
+需要解决一个函数不能重复绑定在同一个事件上，低版本IE没有遵循这个原则；要保证一个方法只能被绑定到某事件上一次；
+- 阻止事件传播；e.stopPropagation,IE是e.cancelBubble=true这个属性；这个一般不做处理，用这个属性，还可以做观察者模式的；
+- 阻止默认行为：e.preventDefault()方法，IE是e.returnValue=false；
 
 #### 事件对象
 

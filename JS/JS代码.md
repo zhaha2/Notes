@@ -833,6 +833,8 @@ console.log(a == 1 && a == 2 && a == 3); // true
 ```
 
 2. 定义一个全局的属性,用defineProperty
+
+注意get（）和value不能同时定义，否则会报错
 ```js
 let i = 1;
 
@@ -1037,6 +1039,7 @@ function flatten(arr) {
 
     for (const i of arr) {
       if (Array.isArray(i) && dep > 0) {
+        // 用concat展平
         result = result.concat(flatten(i, dep - 1))
       } else {
         result.push(i)
@@ -1412,6 +1415,7 @@ Array.from(imgs).forEach(item => observer.observe(item)) // 调用
 >http://www.ruanyifeng.com/blog/2016/11/intersectionobserver_api.html
 
 #### 滚动加载
+上拉加载
 
 ```js
 window.addEventListener('scroll', function() {
@@ -2144,7 +2148,7 @@ function bubbleSort(array) {
 2. 快速排序
 
 ```js
-var sortArray = function(nums) {
+var quickSort = function(nums) {
   const sort = (nums, left = 0, right = nums.length - 1) => {
     // 坑 别忘了边界条件
     if (left >= right) return;
@@ -2167,7 +2171,7 @@ var sortArray = function(nums) {
     const randIndex = Math.floor(Math.random() * (right - left + 1)) + left;
     [nums[left], nums[randIndex]] = [nums[randIndex], nums[left]];
     const pivot = nums[left];
-    // // 坑 别写成array[0]了
+    // // 巨坑 别写成array[0]了
     // const pivot = array[left];
 
     while (left < right) {

@@ -404,6 +404,14 @@ sessionStorage.clear();
 >详见 浏览器原理 &
 https://github.com/WindrunnerMax/EveryDay/blob/master/HTML/LocalStorage%E4%B8%8ESessionStorage.md
 
+##### localStorage 存储的数据类型
+
+localStorage **只能保存字符串**，如果直接setItem 一个对象，则**会执行Object 的toString() 方法**，保存其结果
+
+![](image/2021-09-24-16-50-23.png)
+
+**注意**直接存入对象会变成`[object Object]`,所以一定要用JSON.stringify转化。
+
 ##### 7.5.1 如何设置localStorage的存储时间
 - 重写 set(存入) 方法：
 存入的值由原本的value改为对象，增加属性：time，对应过期时间。因为localStrorage值不能为对象，所以用json（JSON.stringify）转化。
@@ -971,7 +979,9 @@ HTTP缓存空间有限，容易被冲掉。虽然部分浏览器实现SW的存�
 这个类似prefetch标签。
 
 7、前置处理。
-例如校验html/JS是否被运营商劫持？js文件到了UI进程执行后，就无法删除恶意代码，而在SW中，我们可以当作文本一样，轻松解决。当然，在HTTPS环境下出现劫持的概率是极低的。
+例如校验html/JS是否被运营商劫持？ js文件到了UI进程执行后，就无法删除恶意代码，而在SW中，我们可以当作文本一样，轻松解决。当然，在HTTPS环境下出现劫持的概率是极低的。
+
+**？sw应该是独立于强缓存和协商缓存的**，因为缓存位置先检查sw然后再检查memory cache，disk cache
 
 ### 9. img的srcset属性
 响应式页面中经常用到根据屏幕密度设置不同的图片。这时就用到了 img 标签的srcset属性。srcset属性用于设置不同屏幕密度下，img 会自动加载不同的图片。用法如下：
