@@ -336,7 +336,9 @@ Animation 常用动画属性
 }
 ```
 
->https://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html
+>看 https://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html
+[2019年了，你还不会CSS动画？](https://juejin.cn/post/6844903845470945294)
+[]
 
 #### 区别
 （1）transform仅描述元素的静态样式，常常配合transition和animation使用

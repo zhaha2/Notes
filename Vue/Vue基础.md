@@ -671,7 +671,61 @@ Vue添加响应式的时候会先判断configurable是否为true，因为后面�
 
 ### Vuex
 
+[Vuex面试题汇总](https://juejin.cn/post/6844903993374670855#heading-2)
+
 #### vuex原理
+
+##### 插件原理
+使用Vue.use(vuex)时，会调用vuex的install方法
+applyMixin方法使用vue混入机制，vue的生命周期beforeCreate钩子函数前混入vuexInit方法. 在所有组件的 beforeCreate生命周期注入了设置 this.$store这样一个对象。
+![](image/2021-10-02-10-15-35.png)
+
+##### 响应式state原理：
+
+```js
+function resetStoreVM (store, state, hot) {
+  const oldVm = store._vm
+
+  // 设置 getters 属性
+  store.getters = {}
+  const wrappedGetters = store._wrappedGetters
+  const computed = {}
+  // 遍历 wrappedGetters 属性
+  forEachValue(wrappedGetters, (fn, key) => {
+    // 给 computed 对象添加属性
+    computed[key] = partial(fn, store)
+    // 重写 get 方法
+    // store.getters.xx 其实是访问了store._vm[xx]，其中添加 computed 属性
+    Object.defineProperty(store.getters, key, {
+      get: () => store._vm[key],
+      enumerable: true // for local getters
+    })
+  })
+
+  const silent = Vue.config.silent
+  Vue.config.silent = true
+  // 创建Vue实例来保存state，同时让state变成响应式
+  // store._vm._data.$$state = store.state
+  store._vm = new Vue({
+    data: {
+      $$state: state
+    },
+    computed
+  })
+  Vue.config.silent = silent
+
+  // 只能通过commit方式更改状态
+  if (store.strict) {
+    enableStrictMode(store)
+  }
+}
+```
+
+从上面源码，我们可以看出Vuex的state状态是响应式，是借助vue的data是响应式，**将state存入vue实例组件的data中**；Vuex的getters则是借助vue的计算属性computed实现数据实时监听。
+
+>[Vuex从使用到原理解析](https://zhuanlan.zhihu.com/p/78981485)
+[JS每日一题: 请简述一下vuex实现原理](https://segmentfault.com/a/1190000018251844)
+[手写Vuex核心原理，再也不怕面试官问我Vuex原理](https://juejin.cn/post/6855474001838342151#heading-3)
 
 #### 页面刷新 Vuex数据丢失
 
@@ -833,6 +887,10 @@ router为VueRouter实例，想要导航到不同URL，则使用router.push方法
 
 两种方法
 https://www.cxyzjd.com/article/woshidamimi0/84837727
+
+#### 手写路由
+
+稍后 [面试官: 你了解前端路由吗?](https://juejin.cn/post/6844903589123457031#heading-13)
 
 ### v-if v-show
 

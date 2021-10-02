@@ -1617,6 +1617,16 @@ console.log((function(a, d, b = 1, c) {}).length);  //2
 ### JS动画
 
 1. 使用 setInterval
+
+
+缺点
+
+　　　（1）setinterval()无视代码错误，如果setinterval执行的代码由于某种原因出了错，它还会持续不断地调用该代码。
+
+　　　（2）setinterval无视网络延迟，由于某些原因（服务器过载、临时断网、流量剧增、用户带宽受限，等等），你的请求要花的时间远比你想象的要长。但setinterval不在乎。它仍然会按定时持续不断地触发请求，最终你的客户端网络队列会塞满调用函数。
+
+　　　（3） setinterval不保证执行，与settimeout不同，并不能保证到了时间间隔，代码就准能执行。如果你调用的函数需要花很长时间才能完成，那某些调用会被直接忽略　
+
 ```js
 train.onclick = function() {
       let start = Date.now();
@@ -1634,6 +1644,9 @@ train.onclick = function() {
 ```
 
 2. requestAnimationFrame
+
+　告诉浏览器——你希望执行一个动画，并且要求浏览器在下次重绘之前调用指定的回调函数更新动画。**不需要设置时间间隔，是由系统的时间间隔定义的**。大多数浏览器的刷新频率是60Hz(每秒钟反复绘制60次)，循环间隔是1000/60，约等于16.7ms。不需要调用者指定帧速率，浏览器会自行决定最佳的帧效率。只被执行一次，这样就不会引起丢帧现象，也不会导致动画出现卡顿的问题。
+
 ```js
 function animate({timing, draw, duration}) {
 

@@ -829,6 +829,38 @@ div {
 }
 ```
 
+#### 品字形布局
+
+```html
+<style>
+  .top {
+    /* 上排占整行 */
+    width: 100%; 
+    /* 上排居中
+      width: 50%;
+      margin: 0 auto;
+    */
+    height: 50px;
+    background: red;
+  }
+  .bottom-left, .bottom-right {
+    width: 50%;
+    height: 50px;
+  }
+  .bottom-right {
+    float: right;
+    background: #000;
+  }
+  .bottom-left {
+    float: left;
+    background: green;
+  }
+</style>
+<div class="top"></div>
+<div class="bottom-left"></div>
+<div class="bottom-right"></div>
+```
+
 #### 半红半蓝
 1. border
 ```css
