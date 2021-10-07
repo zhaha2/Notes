@@ -173,9 +173,11 @@ then方法返回的是一个新的Promise实例（注意，不是原来那个Pro
 ### JS基础
 
 #### 手写Promise
-[BAT前端经典面试问题：史上最最最详细的手写Promise教程](https://juejin.cn/post/6844903625769091079#heading-9)
 
-or [实现一个简版promise](http://interview.poetries.top/docs/handwritten.html#_7-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E7%89%88promise)
+重点：用两个队列来缓存成功和失败的回调任务
+
+[BAT前端经典面试问题：史上最最最详细的手写Promise教程](https://juejin.cn/post/6844903625769091079#heading-9)
+[图解 Promise 实现原理（一）—— 基础实现](https://zhuanlan.zhihu.com/p/58428287)
 
 #### Promise.all
 
@@ -415,6 +417,8 @@ function myInstanceof(left, right) {
 
 #### 柯里化
 
+##### 定长参数
+
 - 柯里化的定义：接收一部分参数，返回一个函数接收剩余参数，接收足够参数后，执行原函数。
 - 好处：减少代码冗余，增加可读性，是一种简洁的实现函数委托的方式。
 
@@ -474,6 +478,17 @@ function curry(fn, args = []) {
     }
   }
 }   
+
+// ---
+function fn(a, b, c) {
+  return a + b + c;
+}
+var curried = curry(fn);
+curried(1, 2, 3); // 6
+curried(1, 2)(3); // 6
+curried(1)(2, 3); // 6
+curried(1)(2)(3); // 6
+curried(7)(8)(9); // 24
 ```
 
 **ES6写法**
@@ -484,6 +499,42 @@ const curry = fn =>
             ? fn(...args)
             : (arg2) => judge(...args, arg2)
 ```
+
+##### 不定长参数（柯里化累加器）
+
+关键点在于怎么让函数返回的还是一个函数但是浏览器打印的时候输出的是一个值。
+浏览器alert 方法调用了函数的toString方法，那么我们只要重写toString，就可以巧妙地实现我们的需求了。(注意console.log在chrome不行，还是会打印函数的源代码)
+
+```js
+function curry(fn, args = []) {
+
+  function curried (...newArgs) {
+    const curArgs = [...args, ...newArgs]
+
+    // 递归返回科里化的函数，等待参数的传入
+    return curry.call(this, fn, curArgs)
+  }
+
+  curried.toString = function () {
+    return fn.apply(this, args)
+  }
+
+  return curried;
+}  
+
+function dynamicAdd(...args) {
+  return args.reduce((prev, curr) => {
+    return prev + curr
+  }, 0)
+}
+
+// ---
+var add = curry(dynamicAdd);
+alert(add(1)(2)(3)(4)) // 10
+alert(add(1, 2)(3, 4)(5, 6)) // 21
+```
+
+>看 [彻底搞懂闭包，柯里化，手写代码，金九银十不再丢分！](https://juejin.cn/post/6864378349512065038#heading-29)
 
 #### Promise封装AJAX
 

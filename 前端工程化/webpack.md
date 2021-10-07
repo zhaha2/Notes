@@ -245,4 +245,7 @@ HMR的核心就是客户端从服务端拉去更新后的文件，准确的说�
 >稍后： [Webpack HMR 原理解析](https://zhuanlan.zhihu.com/p/30669007)
 [轻松理解webpack热更新原理](https://juejin.cn/post/6844904008432222215#heading-15)
 
+## Tree-Shaking原理
+稍后 [Tree-Shaking性能优化实践 - 原理篇](https://juejin.cn/post/6844903544756109319)
+
 ## Vue-cli
