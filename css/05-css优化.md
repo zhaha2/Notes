@@ -291,7 +291,7 @@ style-loader 通过一个JS脚本**创建一个style标签**，里面包含一�
 ---
 在实际使用中，**css-loader 的执行顺序一定要安排在 style-loader 的前面**。因为只有完成了编译过程，才可以对 css 代码进行插入；若提前插入了未编译的代码，那么 webpack 是无法理解这坨东西的，它会无情报错。
 
-但是**写法上**css-loader要在后面，因为他是从右向左解析度。
+但是**写法上**css-loader要在后面，因为他是从右向左解析的。
 ```js
 module.exports = {
   module: {

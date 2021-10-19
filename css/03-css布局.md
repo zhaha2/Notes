@@ -175,7 +175,7 @@ only运算符仅在整个查询匹配时才用于应用样式，并且对于防�
 
 关于兼容： 页面头部必须有mata声明的viewport。
 
-总结就是viewport+媒体查询
+**总结**就是viewport+媒体查询
 viewport设定页面宽度为设备宽度，媒体查询则获取页面宽度
 >见 http://www.ruanyifeng.com/blog/2012/05/responsive_web_design.html
 
@@ -270,8 +270,22 @@ flex属性是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 au
 该属性有两个快捷值：auto (1 1 auto) 和 none (0 0 auto)。
 建议优先使用这个属性，而不是单独写三个分离的属性，因为浏览器会推算相关值。
 
+![](image/2021-10-19-14-37-07.png)
+
 **注意**
 如果元素上同时设置了width和flex-basis，那么width 的值会被flex-basis覆盖掉。width会失效。
+
+##### flex:1和flex:auto的区别
+
+flex:1等同于设置flex: 1 1 0%，flex:auto等同于设置flex: 1 1 auto。
+
+flex-basis这个属性，auto表示基准值(也就是设置的width)，0%表示0无尺寸。
+
+元素尺寸可以弹性增大，也可以弹性变小，具有十足的弹性，但是flex:1在尺寸不足时会优先最小化内容尺寸，flex:auto在尺寸不足时会优先最大化内容尺寸。
+
+![](image/2021-10-19-14-38-39.png)
+
+上图鲜明地体现了flex:1和flex:auto的区别，虽然都是充分分配容器的尺寸，但是flex:1的尺寸表现更为内敛（优先牺牲自己的尺寸），flex:auto的尺寸表现则更为霸道（优先扩展自己的尺寸）
 
 #### 7.2 flex的高度
 Flex 布局会默认：
@@ -301,7 +315,7 @@ BFC（Block Formatting Context）块级格式化上下文，是 Web 页面中盒
 
 * 内部的 Box 会在垂直方向上一个接一个的放置。
 * 垂直方向上的距离由 margin 决定（BFC内部外边距会发生折叠）
-* bfc 的区域不会与 float 的元素区域重叠。
+* bfc 的区域不会与 float 的元素区域重叠（两栏布局）。
 * 计算 bfc 的高度时，浮动元素也参与计算（解决高度塌陷(清除浮动)）
 * bfc 就是页面上的一个独立容器，容器里面的子元素不会影响外面元素。
 
