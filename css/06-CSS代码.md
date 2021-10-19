@@ -493,7 +493,7 @@ child{
 ```
 
 ###### 3.3.1.3 absolute + margin auto
-利用绝对定位，设置四个方向的值都为0，并将margin设置为auto，由于宽高固定，因此对应方向实现平分，可以实现水平和垂直方向上的居中(？？子元素要有宽高才行，否则同时设置left、right等会将元素拉伸)
+利用绝对定位，设置四个方向的值都为0，并将margin设置为auto，由于宽高固定，因此对应方向实现平分，可以实现水平和垂直方向上的居中(**子元素要有宽高才行**，否则同时设置left、right等会将元素**拉伸**)
 ``` css {.line-numbers}
 .father {
      position: relative;
@@ -753,7 +753,7 @@ div {
   background: orange;
 }
 ```
-- 利用子元素的margin-top的值来实现：
+- 利用伪元素的margin-top的值来实现：
 ``` css {.line-numbers}
 .square {
   width: 30%;
@@ -785,7 +785,7 @@ div {
 
 #### CSS9宫格
 问题：创建出CSS9宫格，3*3宫格，每个宫格的长宽未知，要求达到自适应并且精确分配。
-学长特意说要精确分配，所以用1/3肯定是不行的，于是使用flex布局：
+要精确分配，所以用1/3肯定是不行的，于是使用flex布局：
 ``` html
 <!--HTML-->
 <div class="container">
