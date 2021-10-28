@@ -61,15 +61,25 @@ Vue响应式底层实现方法是 Object.defineProperty() 方法，该方法中�
 
 #### 为什么双向绑定不会陷入死循环
 
-1. 可能是重写的getter中
+1. 从Vue响应式的原理来问
+  可能是重写的getter中
+```js
 //如果数据发生变化才会更新数据
 if (reactiveValue !== newValue) {...}
+```
 
-2. 可能是如v-model的双向绑定，使用input.value方法写值, 并不会触发元素的input和change事件.
-input事件: 当用户直接在文本域输入时触发;
-change事件: 当文本域onblur并且值和focus前不一致时触发.
-用于setter对于input是直接写值, 因此input的input事件并没有被触发.
-？也就是说data触发的页面更新，页面不会触发事件并回调更新data
+2. 从v-model原理来问
+可能是如v-model的双向绑定，使用改写data中数据再v-bind的方法写值, 并不会触发元素的input和change事件，所以也不会再调用v-on对应的方法。
+<!-- 用于setter对于input是直接写值, 因此input标签的input事件并没有被触发. -->
+
+```html
+<input v-model="sth" />
+//  等同于
+<input 
+    v-bind:value="message" 
+    v-on:input="message=$event.target.value"
+>
+```
 
 >https://segmentfault.com/q/1010000008243687
 
@@ -80,8 +90,8 @@ change事件: 当文本域onblur并且值和focus前不一致时触发.
 
 #### 为什么3.0用proxy取代Object.defineProperty
 
-- Proxy可以直接监听对象而非属性（Proxy返回的是一个新对象,我们可以只操作新的对象达到目的,而Object.defineProperty只能遍历对象属性直接修改。）
-  defineProperty只能对当前对象的**其中一个属性**进行劫持
+- Proxy可以**直接监听整个对象而非属性**（Proxy返回的是一个新对象,我们可以只操作新的对象达到目的,而Object.defineProperty只能遍历对象属性直接修改。）
+而defineProperty只能对当前对象的**其中一个属性**进行劫持
 - Proxy可以直接监听数组的变化
 
 ```js
@@ -112,10 +122,10 @@ const a = new Proxy([1,2], {
 });
 a.push(1);
 
-get [1,2] push
-get [1,2] length
-set [1,2] 2 1
-set [1,2, 1] length 3
+// get [1,2] push
+// get [1,2] length
+// set [1,2] 2 1
+// set [1,2, 1] length 3
 ```
 
 ---
@@ -139,6 +149,10 @@ proxy本身也不能深度监听对象，**也要递归监听子对象**。但�
 
 Dep(依赖)就是帮我们收集**究竟要通知到哪里的**。 虽然data中有text和message属性，但是只有message被渲染到页面上，至于text无论怎么变化都影响不到视图的展示，因此我们**仅仅对message进行收集即可**，可以避免一些无用的工作。
 那这个时候message的Dep就收集到了一个依赖，这个依赖就是用来管理data中message变化的。
+
+实际上在mounted回调之前，会实例化当前组件的Watcher，这个阶段会根据render函数中需要的变量去data选项中获取值，就触发了data中变量对应的get方法，就会把当前Watcher添加到变量对应的Dep维护的订阅者数组中去。
+
+**watch和computed选项的依赖收集**
 
 - 当使用watch属性时，也就是开发者自定义的监听某个data中属性的变化。比如监听message的变化，message变化时我们就要通知到watch这个钩子，让它去执行回调函数。
 这个时候message的Dep就收集到了两个依赖，第二个依赖就是用来管理watch中message变化的。
@@ -285,7 +299,7 @@ def(obj, 'push');
 
 let arr = [0];
 
-// 原型的指向重写
+// 重写数组的原型指向
 arr.__proto__ = obj;
 
 // 执行push
@@ -367,7 +381,7 @@ computed: {
 - 通过key值指定哪些更新是相同的。
 (尽可能的复用旧的节点)
 
-??采用先序深度优先遍历的算法
+采用先序深度优先遍历的算法
 
 只有当新旧子节点的类型都是多个子节点时，核心 Diff 算法才派得上用场
 
@@ -711,6 +725,7 @@ Vue添加响应式的时候会先判断configurable是否为true，因为后面�
 ##### 插件原理
 使用Vue.use(vuex)时，会调用vuex的install方法
 applyMixin方法使用vue混入机制，vue的生命周期beforeCreate钩子函数前混入vuexInit方法. 在所有组件的 beforeCreate生命周期注入了设置 this.$store这样一个对象。
+
 ![](image/2021-10-02-10-15-35.png)
 
 ##### 响应式state原理：

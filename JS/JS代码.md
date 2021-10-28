@@ -275,32 +275,22 @@ Promise.race = function(promiseArr) {
 
 #### sleep
 ```js
-function sleep(fn, time) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve(fn);
-        }, time);
-    }); 
+function sleep(time) {
+  return new Promise((resolve, reject) => {
+      setTimeout(() => {
+          resolve();
+      }, time);
+  }); 
 }
 
-// 测试用例
-let index = 0;
-
-function fn() {
-    console.log('我要吃饭了', index++);
+async function play () {
+  await sleep(3000);
+  console.log('hello');
+  await sleep(5000);
+  console.log('world');
 }
 
-// 关键是await
-async function play() {
-    let a = await sleep(fn, 1000);
-    a();
-    let b = await sleep(fn, 2000);
-    b()
-    let c = await sleep(fn, 3000);
-    c()
-}
-
-play();
+play()
 ```
 
 #### 防抖
@@ -387,6 +377,7 @@ function getType(value) {
     return value + "";
   }
   // 判断数据是引用类型的情况
+  // 但是基础类型其实也可以用这个判断
   if (typeof value === "object") {
     // 比如 [object Array]
     return Object.prototype.toString.call(obj)
@@ -621,7 +612,7 @@ console.log(obj2); //{a:1,b:{c:2}}
 
 #### 深拷贝
 
-- 浅拷贝：浅拷贝指的是将一个对象的属性值复制到另一个对象，如果有的属性的值为引用类型的话，那么会将这个引用的地址复制给对象，因此两个对象会有同一个引用类型的引用。浅拷贝可以使用  Object.assign 和展开运算符来实现。
+- 浅拷贝：浅拷贝指的是将一个对象的**所有属性值**（注意，不是整个当前对象）复制到另一个对象，如果有的属性的值为引用类型的话，那么会将这个引用的地址复制给对象，因此两个对象会有同一个引用类型的引用。浅拷贝可以使用  Object.assign 和展开运算符来实现。
 - 深拷贝：深拷贝相对浅拷贝而言，如果遇到属性值为引用类型的时候，它新建一个引用类型并将对应的值复制给它，因此对象获得的一个新的引用类型而不是一个原有类型的引用。深拷贝对于一些对象可以使用 JSON 的两个函数来实现，但是由于 JSON 的对象格式比 js 的对象格式更加严格，所以如果属性值里边出现函数或者 Symbol 类型的值时，会转换失败
 
 1. JSON.stringify()
