@@ -745,6 +745,7 @@ function cloneFunction(func) {
 ```
 
 #### call apply bind
+见 [作用域](./作用域.md)
 
 #### 静态属性
 写一个函数 Foo 要求:
@@ -1028,7 +1029,7 @@ function flatten(arr) {
 console.log(flatten(arr)); //  [1, 2, 3, 4，5]
 ```
 
-不推荐使用 toString + split 方法，因为操作字符串是和危险的事情（数组全是数字就没什么问题）
+不推荐使用 toString + split 方法，因为操作字符串是和危险的事情（字符串中本身带`,`就会出错了，数组全是数字就没什么问题）
 
 ##### 扩展运算符
 ```js
@@ -1064,6 +1065,7 @@ function flatten(arr) {
   for(let i = 0; i < arr.length; i++) {
     if(Array.isArray(arr[i])) {
       // 注意这里不是push
+      // 要用concat，因为concat接收参数为数组的时候会展开数组
       result = result.concat(flatten(arr[i]));
     } else {
       result.push(arr[i]);
@@ -1457,7 +1459,7 @@ Array.from(imgs).forEach(item => observer.observe(item)) // 调用
 >http://www.ruanyifeng.com/blog/2016/11/intersectionobserver_api.html
 
 #### 滚动加载
-上拉加载
+上拉加载更多
 
 ```js
 window.addEventListener('scroll', function() {
@@ -1719,6 +1721,7 @@ function promiseChain(tasks) {
   let promise = Promise.resolve()
 
   tasks.forEach(task => {
+    // 链起来
       promise = promise
                   .then(task)
                   .then(res => {
@@ -2218,6 +2221,7 @@ var quickSort = function(nums) {
 
     while (left < right) {
       // 找到右边第一个比pivot大的元素 交换到左边
+      // 顺序别反了
       while (left < right && nums[right] >= pivot) right--;
       nums[left] = nums[right];
 
