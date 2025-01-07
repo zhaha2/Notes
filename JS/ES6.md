@@ -138,7 +138,7 @@ fun1.bind({id: 'Obj'})();   // 'Global'
 new操作符的实现步骤如下：
 1. 创建一个对象
 2. 将构造函数的作用域赋给新对象（也就是将对象的__proto__属性指向构造函数的prototype属性）
-3. 指向构造函数中的代码，构造函数中的this指向该对象（也就是为这个对象添加属性和方法）
+3. 执行构造函数中的代码，构造函数中的this指向该对象（也就是为这个对象添加属性和方法）
 4. 返回新的对象
 
 所以，上面的第二、三步，箭头函数都是没有办法执行的。
@@ -623,6 +623,83 @@ Symbol 作为属性名，**遍历对象**的时候，该属性不会出现在for
 另一个新的 API，**Reflect.ownKeys()方法**可以返回所有类型的键名，包括常规键名和 Symbol 键名。
 
 由于以 Symbol 值作为键名，不会被常规方法遍历得到。我们可以利用这个特性，**为对象定义一些非私有的、但又希望只用于内部的方法**。
+
+### interface 和 type
+
+#### 1. 区别
+
+##### type 可以而 interface 不行
+
+1. type 可以声明基本类型别名，联合类型，元组等类型; type 可以使用类型操作符，如 | 和 & 符号，而 interface 不能使用类型操作符；所以在扩展时，interface 可以使用 extends 操作符
+
+```js
+// 基本类型别名
+type Name = string
+
+// 联合类型
+interface Dog {
+    wong();
+}
+interface Cat {
+    miao();
+}
+
+type Pet = Dog | Cat
+
+// 具体定义数组每个位置的类型
+type PetList = [Dog, Pet]
+```
+
+2. type 语句中还可以使用 typeof 获取实例的 类型进行赋值
+
+```js
+// 当你想获取一个变量的类型时，使用 typeof
+let div = document.createElement('div');
+type B = typeof div
+```
+
+3. 其他骚操作
+
+```js
+type StringOrNumber = string | number;  
+type Text = string | { text: string };  
+type NameLookup = Dictionary<string, Person>;  
+type Callback<T> = (data: T) => void;  
+type Pair<T> = [T, T];  
+type Coordinates = Pair<number>;  
+type Tree<T> = T | { left: Tree<T>, right: Tree<T> };
+```
+
+##### interface 可以而 type 不行
+
+1. interface 能够声明合并
+
+```js
+interface User {
+  name: string
+  age: number
+}
+
+interface User {
+  sex: string
+}
+
+/*
+User 接口为 {
+  name: string
+  age: number
+  sex: string 
+}
+*/
+```
+
+2. interface 可以被 implements
+
+一般来说，如果不清楚什么时候用interface/type，能用 interface 实现，就用 interface , 如果不能就用 type 。
+
+### 泛型
+
+> [一文读懂 TypeScript 泛型及应用（ 7.8K字）](https://juejin.cn/post/6844904184894980104)
 
 ### 模块
 

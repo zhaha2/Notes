@@ -793,8 +793,9 @@ Axios 是一种基于Promise封装的HTTP客户端，其特点如下：
 >方式一：直接绑定匿名函数
 >方式二：先单独定义函数，再绑定
 >方式三：行内绑定
+
 ```js
-<!--行内绑定-->
+// <!--行内绑定-->
 <div id="box1" onclick="fn()"></div>
 
 <script type="text/javascript">
@@ -805,10 +806,11 @@ Axios 是一种基于Promise封装的HTTP客户端，其特点如下：
 
 </script>
 ```
+```
 
 3. 书写事件驱动程序：关于DOM的操作。
 
-```js
+```html
 <body>
 <button>点我</button>
 <script>

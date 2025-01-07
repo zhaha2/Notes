@@ -1,5 +1,5 @@
-##三. 03-css布局
-###1 盒模型
+## 三. 03-css布局
+### 1 盒模型
 CSS3中的盒模型有以下两种：标准盒子模型、IE盒子模型
 盒模型都是由四个部分组成的，分别是margin、border、padding和content。
 
@@ -34,7 +34,7 @@ console.log(window.getComputedStyle(dom).boxSizing);  //"content-box"
 属性间冲突时，优先级：width>margin-left>margin-right。
 >https://www.cnblogs.com/youhong/p/9392359.html
 
-###2. li 与 li 之间有看不见的空白间隔是什么原因引起的？如何解决？
+### 2. li 与 li 之间有看不见的空白间隔是什么原因引起的？如何解决？
 浏览器会把inline内联元素间的空白字符（空格、换行、Tab等）渲染成一个空格。为了美观，通常是一个`<li>`放在一行，这导致`<li>`换行后产生换行字符，它变成一个空格，占用了一个字符的宽度。
 
 **解决办法：**
@@ -43,7 +43,7 @@ console.log(window.getComputedStyle(dom).boxSizing);  //"content-box"
 3. 将`<ul>`内的字符尺寸直接设为0，即font-size:0。不足：`<ul>`中的其他字符尺寸也被设为0，需要额外重新设定其他字符尺寸，且在Safari浏览器依然会出现空白间隔。
 4. 消除`<ul>`的字符间隔letter-spacing:-8px，不足：这也设置了`<li>`内的字符间隔，因此需要将`<li>`内的字符间隔设为默认letter-spacing:normal。
 
-###3. 替换元素的概念及计算规则
+### 3. 替换元素的概念及计算规则
 通过修改某个属性值呈现的内容就可以被替换的元素就称为“替换元素”。
 
 替换元素除了内容可替换这一特性以外，还有以下特性：
